@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 const BENEFITS = [
@@ -20,7 +19,6 @@ export default function PremiumPage() {
   const [isPremium, setIsPremium] = useState(false)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
-  const params = useSearchParams()
   const supabase = createClient()
 
   useEffect(() => {
@@ -31,7 +29,8 @@ export default function PremiumPage() {
       setChecking(false)
     })
 
-    if (params.get('success') === 'true') {
+    const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    if (search?.get('success') === 'true') {
       toast.success('🎉 Bem-vindo ao Premium! Aproveite tudo!', { duration: 5000 })
     }
   }, [])
