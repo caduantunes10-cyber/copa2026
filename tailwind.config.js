@@ -17,11 +17,17 @@ module.exports = {
         'trophy-gold': '#f7c948',
         'hot-red': '#ff2d55',
         'ultra-violet': '#8b5cf6',
+        'fifa-blue': '#001f5b',
+        'fifa-dark': '#000814',
+        'fifa-orange': '#ff6b00',
+        'ge-red': '#c8102e',
+        'ge-gray': '#f5f5f5',
       },
       boxShadow: {
         glow: '0 0 40px rgba(40,217,255,0.24)',
         'glow-red': '0 0 44px rgba(255,45,85,0.28)',
         'glow-lime': '0 0 44px rgba(183,255,42,0.22)',
+        'glow-orange': '0 0 44px rgba(255,107,0,0.28)',
       },
       animation: {
         float: 'float 6s ease-in-out infinite',
