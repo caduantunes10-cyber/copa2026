@@ -306,5 +306,7 @@ export default function AmigosPage() {
     </div>
   )
 }
-
+</main>
+  )
+}
 
