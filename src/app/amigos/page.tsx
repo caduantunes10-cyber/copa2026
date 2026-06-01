@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity, Profile } from '@/types'
 import toast from 'react-hot-toast'
 
+
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime()
   const mins = Math.floor(diff / 60000)
@@ -15,6 +16,7 @@ function timeAgo(date: string) {
   if (hours < 24) return `${hours}h`
   return `${Math.floor(hours / 24)}d`
 }
+
 
 function ActionText({ item }: { item: FeedActivity }) {
   if (item.action_type === 'vote') {
@@ -34,6 +36,7 @@ function ActionText({ item }: { item: FeedActivity }) {
   return <span>{item.action_type}</span>
 }
 
+
 function Avatar({ profile }: { profile: Profile }) {
   return profile.avatar_url ? (
     <img src={profile.avatar_url} alt={profile.full_name || ''} className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-white shadow-sm" />
@@ -43,6 +46,7 @@ function Avatar({ profile }: { profile: Profile }) {
     </div>
   )
 }
+
 
 function UserCard({ profile, isFollowing, onToggleFollow }: {
   profile: Profile, isFollowing: boolean, onToggleFollow: (id: string, following: boolean) => void
@@ -66,6 +70,7 @@ function UserCard({ profile, isFollowing, onToggleFollow }: {
     </div>
   )
 }
+
 
 export default function AmigosPage() {
   const [tab, setTab] = useState<'feed' | 'seguindo' | 'busca'>('feed')
@@ -125,7 +130,36 @@ export default function AmigosPage() {
       })
       .subscribe()
 
-    return (
+    return () => { channel.unsubscribe() }
+  }, [followingIds])
+
+  const handleToggleFollow = async (id: string, isFollowing: boolean) => {
+    if (!currentUser) return
+    if (isFollowing) {
+      await supabase.from('follows').delete().eq('follower_id', currentUser).eq('following_id', id)
+      setFollowingIds(prev => { const s = new Set(prev); s.delete(id); return s })
+      setFollowing(prev => prev.filter(p => p.id !== id))
+    } else {
+      await supabase.from('follows').insert({ follower_id: currentUser, following_id: id })
+      setFollowingIds(prev => new Set([...prev, id]))
+    }
+  }
+
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query)
+    if (query.length < 2) { setSearchResults([]); return }
+    const res = await fetch(`/api/friends?type=search&q=${encodeURIComponent(query)}`)
+    const data = await res.json()
+    setSearchResults(data.results || [])
+  }
+
+  const TABS = [
+    { key: 'feed', label: 'Feed', icon: TrendingUp },
+    { key: 'seguindo', label: 'Seguindo', icon: Users },
+    { key: 'busca', label: 'Buscar', icon: Search }
+  ]
+
+  return (
     <div className="pb-28">
       <section className="mb-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03] sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -167,8 +201,8 @@ export default function AmigosPage() {
           {!currentUser && (
             <div className="rounded-[22px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
               <UserPlus className="mx-auto mb-4 h-10 w-10 text-[#16C45B]" />
-              <p className="text-xl font-black text-[#111827]">Fa?a login para ver o feed</p>
-              <p className="mt-2 text-sm font-semibold text-[#6B7280]">Veja o que seus amigos est?o votando em tempo real.</p>
+              <p className="text-xl font-black text-[#111827]">Faça login para ver o feed</p>
+              <p className="mt-2 text-sm font-semibold text-[#6B7280]">Veja o que seus amigos estão votando em tempo real.</p>
             </div>
           )}
           {currentUser && following.length === 0 && (
@@ -181,7 +215,7 @@ export default function AmigosPage() {
           )}
           {loading && (
             <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className="h-28 animate-pulse rounded-[22px] bg-white shadow-[0_10px_30px_rgba(17,24,39,0.04)] ring-1 ring-black/[0.03]" />)}
+              {[1, 2, 3].map(i => <div key={i} className="h-28 animate-pulse rounded-[22px] bg-white shadow-[0_10px_30px_rgba(17,24,39,0.04)] ring-1 ring-black/[0.03]" />)}
             </div>
           )}
           {!loading && feed.length > 0 && (
@@ -199,7 +233,7 @@ export default function AmigosPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <h2 className="truncate text-[13px] font-black text-[#111827]">{item.profile?.full_name || item.profile?.username || 'Usu?rio'}</h2>
+                              <h2 className="truncate text-[13px] font-black text-[#111827]">{item.profile?.full_name || item.profile?.username || 'Usuário'}</h2>
                               <p className="text-[10px] font-semibold text-[#6B7280]">@{item.profile?.username || 'torcedor'}</p>
                             </div>
                             <span className="shrink-0 text-[10px] font-semibold text-[#6B7280]">{timeAgo(item.created_at)}</span>
@@ -240,7 +274,7 @@ export default function AmigosPage() {
           {following.length === 0 ? (
             <div className="rounded-[22px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
               <Users className="mx-auto mb-4 h-10 w-10 text-[#16C45B]" />
-              <p className="text-xl font-black text-[#111827]">Voc? ainda n?o segue ningu?m</p>
+              <p className="text-xl font-black text-[#111827]">Você ainda não segue ninguém</p>
               <button onClick={() => setTab('busca')} className="mt-5 rounded-full bg-[#6C3BFF] px-6 py-3 text-sm font-black uppercase text-white">Buscar amigos</button>
             </div>
           ) : (
@@ -278,7 +312,7 @@ export default function AmigosPage() {
 
           {searchResults.length === 0 && searchQuery.length >= 2 && (
             <div className="rounded-[22px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
-              <p className="text-sm font-semibold text-[#6B7280]">Nenhum usu?rio encontrado.</p>
+              <p className="text-sm font-semibold text-[#6B7280]">Nenhum usuário encontrado.</p>
             </div>
           )}
 
@@ -306,7 +340,3 @@ export default function AmigosPage() {
     </div>
   )
 }
-</main>
-  )
-}
-
