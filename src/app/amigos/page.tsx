@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { Heart, MessageCircle, Search, Share2, TrendingUp, UserPlus, Users, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity, Profile } from '@/types'
 import toast from 'react-hot-toast'
@@ -17,35 +18,27 @@ function timeAgo(date: string) {
 
 function ActionText({ item }: { item: FeedActivity }) {
   if (item.action_type === 'vote') {
-    return (
-      <span>
-        votou em <span style={{ color: '#FFD700', fontWeight: 700 }}>{item.target_name}</span> ⚽
-      </span>
-    )
+    return <span>votou em <span className="font-black text-[#16C45B]">{item.target_name}</span></span>
   }
   if (item.action_type === 'poll_vote') {
     return (
       <span>
-        respondeu <span style={{ color: '#60a5fa' }}>"{item.target_name}"</span>
-        {item.meta?.option_label && (
-          <> com <span style={{ color: '#4ade80', fontWeight: 700 }}>"{item.meta.option_label as string}"</span></>
-        )}
+        respondeu <span className="font-black text-[#111827]">{item.target_name}</span>
+        {item.meta?.option_label && <> com <span className="font-black text-[#16C45B]">{item.meta.option_label as string}</span></>}
       </span>
     )
   }
   if (item.action_type === 'premium') {
-    return <span>assinou o <span style={{ color: '#FFD700', fontWeight: 700 }}>👑 Premium</span></span>
+    return <span>assinou o <span className="font-black text-[#16C45B]">Premium</span></span>
   }
   return <span>{item.action_type}</span>
 }
 
 function Avatar({ profile }: { profile: Profile }) {
   return profile.avatar_url ? (
-    <img src={profile.avatar_url} alt={profile.full_name || ''} className="rounded-full object-cover flex-shrink-0"
-      style={{ width: 40, height: 40, border: profile.is_premium ? '2px solid #FFD700' : '2px solid rgba(255,255,255,0.1)' }} />
+    <img src={profile.avatar_url} alt={profile.full_name || ''} className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-white shadow-sm" />
   ) : (
-    <div className="rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-      style={{ width: 40, height: 40, background: 'linear-gradient(135deg,#009C3B,#FFD700)', border: profile.is_premium ? '2px solid #FFD700' : 'none' }}>
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6C3BFF] to-[#16C45B] text-sm font-black text-white shadow-sm">
       {profile.full_name?.[0] || 'U'}
     </div>
   )
@@ -55,23 +48,19 @@ function UserCard({ profile, isFollowing, onToggleFollow }: {
   profile: Profile, isFollowing: boolean, onToggleFollow: (id: string, following: boolean) => void
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+    <div className="flex items-center gap-3 rounded-[22px] bg-white p-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
       <Avatar profile={profile} />
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-white text-sm truncate">
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-black text-[#111827]">
           {profile.full_name || profile.username}
-          {profile.is_premium && <span className="ml-1 text-xs" style={{ color: '#FFD700' }}>👑</span>}
+          {profile.is_premium && <span className="ml-2 rounded-full bg-[#E8FFF0] px-2 py-0.5 text-[10px] font-black uppercase text-[#16C45B]">VIP</span>}
         </div>
-        <div className="text-xs" style={{ color: '#666' }}>
+        <div className="text-xs font-bold text-[#6B7280]">
           {profile.total_votes} voto{profile.total_votes !== 1 ? 's' : ''}
         </div>
       </div>
       <button onClick={() => onToggleFollow(profile.id, isFollowing)}
-        className="px-3 py-1.5 rounded-xl text-xs font-bold flex-shrink-0"
-        style={isFollowing
-          ? { background: 'rgba(255,255,255,0.08)', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }
-          : { background: 'linear-gradient(90deg,#FFD700,#FFA500)', color: '#000', border: 'none' }}>
+        className={`shrink-0 rounded-full px-4 py-2 text-xs font-black uppercase transition active:scale-[0.98] ${isFollowing ? 'bg-[#F3F4F6] text-[#6B7280]' : 'bg-[#6C3BFF] text-white shadow-[0_10px_24px_rgba(108,59,255,0.18)]'}`}>
         {isFollowing ? 'Seguindo' : 'Seguir'}
       </button>
     </div>
@@ -116,7 +105,6 @@ export default function AmigosPage() {
     loadFollowing()
   }, [loadFeed, loadFollowing])
 
-  // Realtime: escuta novas atividades
   useEffect(() => {
     const channel = supabase
       .channel('activity-feed')
@@ -125,7 +113,6 @@ export default function AmigosPage() {
         schema: 'public',
         table: 'activity_feed'
       }, async (payload) => {
-        // Busca o perfil do usuário que gerou a atividade
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
@@ -138,183 +125,160 @@ export default function AmigosPage() {
       })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
-  }, [followingIds])
+    return (
+    <div className="pb-28">
+      <section className="mb-4 rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03] sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[#6C3BFF]">Social da Copa</p>
+            <h1 className="mt-1 text-3xl font-black tracking-[-0.04em] text-[#111827] sm:text-4xl">Feed da torcida</h1>
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#6B7280]">Veja votos, palpites e movimentos dos seus amigos em tempo real.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:min-w-[220px]">
+            <div className="rounded-2xl bg-[#F7FFFA] px-4 py-3 text-center ring-1 ring-[#16C45B]/20">
+              <div className="text-2xl font-black text-[#16C45B]">{following.length}</div>
+              <div className="text-[10px] font-black uppercase text-[#6B7280]">seguindo</div>
+            </div>
+            <div className="rounded-2xl bg-[#F6F1FF] px-4 py-3 text-center ring-1 ring-[#6C3BFF]/10">
+              <div className="text-2xl font-black text-[#6C3BFF]">LIVE</div>
+              <div className="text-[10px] font-black uppercase text-[#6B7280]">tempo real</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  async function handleToggleFollow(userId: string, isFollowing: boolean) {
-    if (!currentUser) {
-      toast.error('Faça login para seguir pessoas!')
-      return
-    }
-
-    if (isFollowing) {
-      await fetch('/api/friends', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ following_id: userId })
-      })
-      setFollowingIds(prev => { const s = new Set(prev); s.delete(userId); return s })
-      setFollowing(prev => prev.filter(p => p.id !== userId))
-      toast.success('Deixou de seguir')
-    } else {
-      const res = await fetch('/api/friends', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ following_id: userId })
-      })
-      if (res.ok) {
-        setFollowingIds(prev => new Set([...prev, userId]))
-        toast.success('Seguindo! 🎉')
-        loadFollowing()
-      }
-    }
-  }
-
-  async function handleSearch(q: string) {
-    setSearchQuery(q)
-    if (q.length < 2) { setSearchResults([]); return }
-    const res = await fetch(`/api/friends?type=search&q=${encodeURIComponent(q)}`)
-    const data = await res.json()
-    setSearchResults(data.users || [])
-  }
-
-  const TABS = [
-    { key: 'feed', label: '📰 Feed' },
-    { key: 'seguindo', label: '👥 Seguindo' },
-    { key: 'busca', label: '🔍 Buscar' },
-  ]
-
-  return (
-    <div className="pb-24">
-      {/* HEADER */}
-      <div className="px-4 pt-5 pb-4">
-        <h1 className="text-xl font-black text-white mb-1">👥 Social</h1>
-        <p className="text-xs" style={{ color: '#666' }}>Veja o que seus amigos estão votando</p>
-      </div>
-
-      {/* TABS */}
-      <div className="px-4 mb-4">
-        <div className="flex gap-2 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-          {TABS.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as any)}
-              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
-              style={tab === t.key
-                ? { background: 'linear-gradient(90deg,#FFD700,#FFA500)', color: '#000' }
-                : { color: '#666', background: 'transparent', border: 'none' }}>
-              {t.label}
-            </button>
-          ))}
+      <div className="sticky top-[76px] z-30 mb-4 rounded-[22px] bg-white p-1.5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+        <div className="grid grid-cols-3 gap-1">
+          {TABS.map(t => {
+            const Icon = t.icon
+            return (
+              <button key={t.key} onClick={() => setTab(t.key as any)}
+                className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-xs font-black uppercase transition ${tab === t.key ? 'bg-[#6C3BFF] text-white shadow-[0_10px_24px_rgba(108,59,255,0.2)]' : 'text-[#6B7280] hover:bg-[#F5F6F8] hover:text-[#111827]'}`}>
+                <Icon className="h-4 w-4" />
+                {t.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* FEED TAB */}
       {tab === 'feed' && (
-        <div className="px-4">
+        <section>
           {!currentUser && (
-            <div className="text-center py-10">
-              <div className="text-4xl mb-3">🔑</div>
-              <p className="text-white font-bold mb-2">Faça login para ver o feed</p>
-              <p className="text-sm" style={{ color: '#666' }}>Veja o que seus amigos estão votando em tempo real</p>
+            <div className="rounded-[22px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+              <UserPlus className="mx-auto mb-4 h-10 w-10 text-[#16C45B]" />
+              <p className="text-xl font-black text-[#111827]">Fa?a login para ver o feed</p>
+              <p className="mt-2 text-sm font-semibold text-[#6B7280]">Veja o que seus amigos est?o votando em tempo real.</p>
             </div>
           )}
           {currentUser && following.length === 0 && (
-            <div className="text-center py-10">
-              <div className="text-4xl mb-3">👀</div>
-              <p className="text-white font-bold mb-2">Siga pessoas para ver o feed!</p>
-              <p className="text-sm mb-4" style={{ color: '#666' }}>Vá em Buscar e encontre seus amigos</p>
-              <button onClick={() => setTab('busca')}
-                className="px-5 py-2 rounded-xl font-bold text-sm"
-                style={{ background: 'linear-gradient(90deg,#FFD700,#FFA500)', color: '#000', border: 'none' }}>
-                Buscar Amigos
-              </button>
+            <div className="rounded-[22px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+              <Users className="mx-auto mb-4 h-10 w-10 text-[#16C45B]" />
+              <p className="text-xl font-black text-[#111827]">Siga pessoas para montar seu feed</p>
+              <p className="mt-2 text-sm font-semibold text-[#6B7280]">Busque amigos e acompanhe as escolhas da sua rede.</p>
+              <button onClick={() => setTab('busca')} className="mt-5 rounded-full bg-[#6C3BFF] px-6 py-3 text-sm font-black uppercase text-white">Buscar amigos</button>
             </div>
           )}
           {loading && (
             <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="rounded-2xl p-4 animate-pulse"
-                  style={{ background: 'rgba(255,255,255,0.04)', height: 80 }} />
-              ))}
+              {[1,2,3].map(i => <div key={i} className="h-28 animate-pulse rounded-[22px] bg-white shadow-[0_10px_30px_rgba(17,24,39,0.04)] ring-1 ring-black/[0.03]" />)}
             </div>
           )}
           {!loading && feed.length > 0 && (
-            <div className="space-y-3">
-              {feed.map(item => (
-                <div key={item.id} className="rounded-2xl p-4"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <div className="flex items-start gap-3">
-                    {item.profile && <Avatar profile={item.profile} />}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-white mb-0.5">
-                        {item.profile?.full_name || item.profile?.username || 'Usuário'}
-                        {item.profile?.is_premium && <span className="ml-1 text-xs" style={{ color: '#FFD700' }}>👑</span>}
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="rounded-[22px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-[13px] font-black uppercase tracking-[0.04em] text-[#111827]">Feed da torcida</h2>
+                  <span className="text-[10px] font-black uppercase text-[#6B7280]">Ao vivo</span>
+                </div>
+                <div className="divide-y divide-[#EEF0F4]">
+                  {feed.map(item => (
+                    <article key={item.id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-start gap-3">
+                        {item.profile && <Avatar profile={item.profile} />}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h2 className="truncate text-[13px] font-black text-[#111827]">{item.profile?.full_name || item.profile?.username || 'Usu?rio'}</h2>
+                              <p className="text-[10px] font-semibold text-[#6B7280]">@{item.profile?.username || 'torcedor'}</p>
+                            </div>
+                            <span className="shrink-0 text-[10px] font-semibold text-[#6B7280]">{timeAgo(item.created_at)}</span>
+                          </div>
+                          <p className="mt-3 text-[13px] font-semibold leading-5 text-[#111827]"><ActionText item={item} /></p>
+                          <div className="mt-3 flex items-center gap-8 text-[11px] font-semibold text-[#6B7280]">
+                            <span className="flex items-center gap-1.5"><MessageCircle className="h-4 w-4" />23</span>
+                            <span className="flex items-center gap-1.5"><Heart className="h-4 w-4" />45</span>
+                            <span className="hidden items-center gap-1.5 sm:flex"><TrendingUp className="h-4 w-4 text-[#16C45B]" />Trending</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm" style={{ color: '#aaa' }}>
-                        <ActionText item={item} />
-                      </div>
-                    </div>
-                    <span className="text-xs flex-shrink-0" style={{ color: '#555' }}>
-                      {timeAgo(item.created_at)}
-                    </span>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <aside className="hidden space-y-4 lg:block">
+                <div className="rounded-[22px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-[13px] font-black uppercase text-[#111827]">Seguindo</h2>
+                    <span className="text-[10px] font-black uppercase text-[#6B7280]">{following.length}</span>
+                  </div>
+                  <div className="space-y-3">
+                    {following.slice(0, 5).map(profile => (
+                      <UserCard key={profile.id} profile={profile} isFollowing={followingIds.has(profile.id)} onToggleFollow={handleToggleFollow} />
+                    ))}
                   </div>
                 </div>
-              ))}
+              </aside>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      {/* SEGUINDO TAB */}
       {tab === 'seguindo' && (
-        <div className="px-4">
+        <section className="space-y-3">
           {following.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="text-4xl mb-3">😕</div>
-              <p className="text-white font-bold mb-2">Você não segue ninguém ainda</p>
-              <button onClick={() => setTab('busca')}
-                className="px-5 py-2 rounded-xl font-bold text-sm mt-2"
-                style={{ background: 'linear-gradient(90deg,#FFD700,#FFA500)', color: '#000', border: 'none' }}>
-                Buscar Amigos
-              </button>
+            <div className="rounded-[22px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+              <Users className="mx-auto mb-4 h-10 w-10 text-[#16C45B]" />
+              <p className="text-xl font-black text-[#111827]">Voc? ainda n?o segue ningu?m</p>
+              <button onClick={() => setTab('busca')} className="mt-5 rounded-full bg-[#6C3BFF] px-6 py-3 text-sm font-black uppercase text-white">Buscar amigos</button>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-xs mb-3" style={{ color: '#666' }}>Seguindo {following.length} pessoa{following.length !== 1 ? 's' : ''}</p>
+            <>
+              <p className="text-sm font-black uppercase tracking-[0.12em] text-[#6B7280]">Seguindo {following.length} pessoa{following.length !== 1 ? 's' : ''}</p>
               {following.map(profile => (
                 <UserCard key={profile.id} profile={profile}
                   isFollowing={followingIds.has(profile.id)}
                   onToggleFollow={handleToggleFollow} />
               ))}
-            </div>
+            </>
           )}
-        </div>
+        </section>
       )}
 
-      {/* BUSCA TAB */}
       {tab === 'busca' && (
-        <div className="px-4">
+        <section>
           <div className="relative mb-4">
             <input
               type="text"
               placeholder="Buscar pelo nome..."
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+              className="w-full rounded-[22px] border border-[#E5E7EB] bg-white px-5 py-4 pr-12 text-sm font-semibold text-[#111827] shadow-[0_10px_30px_rgba(17,24,39,0.04)] outline-none transition focus:border-[#6C3BFF]"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">🔍</span>
+            <Search className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]" />
           </div>
 
           {searchQuery.length < 2 && (
-            <div className="text-center py-8">
-              <div className="text-3xl mb-2">🔍</div>
-              <p className="text-sm" style={{ color: '#666' }}>Digite pelo menos 2 letras para buscar</p>
+            <div className="rounded-[22px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+              <Search className="mx-auto mb-3 h-8 w-8 text-[#16C45B]" />
+              <p className="text-sm font-semibold text-[#6B7280]">Digite pelo menos 2 letras para buscar.</p>
             </div>
           )}
 
           {searchResults.length === 0 && searchQuery.length >= 2 && (
-            <div className="text-center py-8">
-              <p className="text-sm" style={{ color: '#666' }}>Nenhum usuário encontrado</p>
+            <div className="rounded-[22px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+              <p className="text-sm font-semibold text-[#6B7280]">Nenhum usu?rio encontrado.</p>
             </div>
           )}
 
@@ -326,22 +290,21 @@ export default function AmigosPage() {
             ))}
           </div>
 
-          {/* DICA: compartilhar link */}
-          <div className="mt-6 p-4 rounded-2xl text-center"
-            style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(255,215,0,0.15)' }}>
-            <div className="text-2xl mb-2">📤</div>
-            <p className="text-white font-bold text-sm mb-1">Convide seus amigos!</p>
-            <p className="text-xs mb-3" style={{ color: '#888' }}>Compartilhe o link da plataforma</p>
+          <div className="mt-6 rounded-[22px] bg-white p-6 text-center shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03]">
+            <Share2 className="mx-auto mb-3 h-8 w-8 text-[#16C45B]" />
+            <p className="text-lg font-black text-[#111827]">Convide seus amigos</p>
+            <p className="mt-1 text-sm font-semibold text-[#6B7280]">Compartilhe o link da plataforma.</p>
             <button onClick={() => {
               navigator.clipboard.writeText(window.location.origin)
-              toast.success('Link copiado! 🎉')
-            }} className="px-4 py-2 rounded-xl text-xs font-bold"
-              style={{ background: 'linear-gradient(90deg,#FFD700,#FFA500)', color: '#000', border: 'none' }}>
-              Copiar Link
+              toast.success('Link copiado')
+            }} className="mt-4 rounded-full bg-[#6C3BFF] px-5 py-3 text-xs font-black uppercase text-white">
+              Copiar link
             </button>
           </div>
-        </div>
+        </section>
       )}
     </div>
   )
 }
+
+

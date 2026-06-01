@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
@@ -8,11 +8,12 @@ import { Header } from '@/components/layout/Header'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Copa 2026 — Votes & Rankings',
-  description: 'Vote no melhor jogador da Copa do Mundo 2026, veja rankings ao vivo e compete com seus amigos.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: 'Copa 2026 — The World Cup Social Network',
+  description: 'A experiência social em tempo real da Copa do Mundo 2026: votos, palpites, rankings, amigos e rivalidade.',
   openGraph: {
-    title: 'Copa 2026 — Votes & Rankings',
-    description: 'Vote no melhor da Copa e compete com seus amigos!',
+    title: 'Copa 2026 — The World Cup Social Network',
+    description: 'Vote, reaja, preveja resultados e dispute rankings sociais durante a Copa do Mundo 2026.',
     images: ['/og-image.png'],
   },
 }
@@ -24,9 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} bg-[#080810] text-white min-h-screen`}>
+      <body className={`${inter.className} min-h-screen bg-[#F5F6F8] text-[#111827] antialiased`}>
         <Header />
-        <main className="max-w-[480px] mx-auto pb-24">
+        <main className="mx-auto w-full max-w-[1440px] px-3 pb-28 pt-3 sm:px-5 lg:px-6">
           {children}
         </main>
         <BottomNav />
@@ -34,10 +35,13 @@ export default function RootLayout({
           position="bottom-center"
           toastOptions={{
             style: {
-              background: '#1a1a2e',
-              color: '#fff',
-              border: '1px solid rgba(255,215,0,0.2)',
-              marginBottom: '80px',
+              background: '#ffffff',
+              color: '#111827',
+              border: '1px solid rgba(17,24,39,0.08)',
+              boxShadow: '0 20px 60px rgba(17,24,39,0.12)',
+              marginBottom: '88px',
+              borderRadius: '18px',
+              fontWeight: 800,
             },
           }}
         />

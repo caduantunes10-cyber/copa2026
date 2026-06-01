@@ -1,34 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Award, BarChart3, Check, Crown, Flame, Goal, Star, Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Player } from '@/types'
 import toast from 'react-hot-toast'
 
-function PlayerPhoto({ player, size = 64 }: { player: Player, size?: number }) {
+function PlayerPhoto({ player, size = 96 }: { player: Player, size?: number }) {
   const [err, setErr] = useState(false)
   const initials = player.name.split(' ').map(w => w[0]).slice(0, 2).join('')
-  const colors: Record<string, string> = {
-    'Brasil': '#009C3B', 'França': '#0055A4', 'Noruega': '#EF2B2D',
-    'Inglaterra': '#CF081F', 'Espanha': '#AA151B'
-  }
-  const color = colors[player.country] || '#667eea'
 
   if (err || !player.photo_url) {
     return (
-      <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0,
-        background: `linear-gradient(135deg, ${color}cc, ${color}55)`,
-        border: `2px solid ${color}66`, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3,
-        color: '#fff', fontFamily: 'Georgia, serif' }}>
+      <div className="flex shrink-0 items-center justify-center rounded-3xl bg-white/10 font-black text-white ring-1 ring-white/10"
+        style={{ width: size, height: size, fontSize: size * 0.25 }}>
         {initials}
       </div>
     )
   }
+
   return (
     <img src={player.photo_url} alt={player.name} onError={() => setErr(true)}
-      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover',
-        objectPosition: 'top', flexShrink: 0, border: `2px solid ${color}55` }} />
+      className="shrink-0 rounded-3xl object-cover object-top ring-1 ring-white/10"
+      style={{ width: size, height: size }} />
   )
 }
 
@@ -47,7 +41,6 @@ export default function RankingPage() {
 
   useEffect(() => {
     async function init() {
-      // Busca jogadores
       const { data } = await supabase
         .from('player_ranking')
         .select('*')
@@ -55,12 +48,10 @@ export default function RankingPage() {
       if (data) setPlayers(data)
       setLoading(false)
 
-      // Verifica usuário logado
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setIsLoggedIn(true)
 
-      // Busca perfil (premium?)
       const { data: profile } = await supabase
         .from('profiles')
         .select('is_premium')
@@ -68,14 +59,12 @@ export default function RankingPage() {
         .single()
       if (profile) setIsPremium(profile.is_premium)
 
-      // Busca votos do usuário
       const { data: votes } = await supabase
         .from('votes')
         .select('player_id')
         .eq('user_id', user.id)
       if (votes) setMyVotes(new Set(votes.map(v => v.player_id)))
 
-      // Votos de hoje
       const today = new Date(); today.setHours(0,0,0,0)
       const { count } = await supabase
         .from('votes')
@@ -87,7 +76,6 @@ export default function RankingPage() {
     init()
   }, [])
 
-  // Realtime — atualiza vote_count ao vivo
   useEffect(() => {
     const channel = supabase
       .channel('players-ranking')
@@ -108,13 +96,13 @@ export default function RankingPage() {
 
   async function handleVote(player: Player) {
     if (!isLoggedIn) {
-      toast.error('Faça login para votar! 🔑')
+      toast.error('Faça login para votar')
       return
     }
     if (myVotes.has(player.id)) return
 
     if (!isPremium && dailyVotes >= 1) {
-      toast.error('Limite atingido! Assine Premium para votos ilimitados 👑', { duration: 3000 })
+      toast.error('Limite atingido. Assine Premium para votos ilimitados.', { duration: 3000 })
       setTimeout(() => window.location.href = '/premium', 3000)
       return
     }
@@ -129,7 +117,7 @@ export default function RankingPage() {
 
     if (!res.ok) {
       if (data.upgrade) {
-        toast.error('Assine Premium para mais votos! 👑')
+        toast.error('Assine Premium para mais votos')
         setTimeout(() => window.location.href = '/premium', 2000)
       } else {
         toast.error(data.error)
@@ -143,99 +131,134 @@ export default function RankingPage() {
       prev.map(p => p.id === player.id ? { ...p, vote_count: p.vote_count + (data.vote_weight || 1) } : p)
         .sort((a, b) => b.vote_count - a.vote_count)
     )
-    toast.success(`✅ Votado em ${player.short_name}!`)
+    toast.success(`Voto registrado em ${player.short_name}`)
   }
 
-  const medals = ['🥇', '🥈', '🥉']
   const top = players[0]?.vote_count || 1
+  const topThree = players.slice(0, 3)
+  const rest = players.slice(3)
 
   return (
-    <div className="px-4 py-5 pb-24">
-      <div className="flex items-center gap-2 mb-1">
-        <h1 className="text-xl font-black text-white">🏆 Ranking ao Vivo</h1>
-        <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#4ade80' }}>
-          <span className="w-2 h-2 rounded-full live-dot" style={{ background: '#4ade80', display: 'inline-block' }} />
-          LIVE
-        </span>
-      </div>
-      <p className="text-xs mb-5" style={{ color: '#666' }}>
-        {!isLoggedIn ? 'Faça login para votar'
-          : !isPremium ? `${dailyVotes}/1 voto grátis hoje — Premium para ilimitados`
-          : '✨ Votos ilimitados (peso 3x) ativos'}
-      </p>
+    <div className="section-stack pb-28">
+      <section className="cinematic-panel rounded-[36px] p-6 sm:p-10">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-5 section-kicker">
+              <span className="live-dot h-2 w-2 rounded-full bg-hot-red" />
+              Ranking ao vivo
+            </div>
+            <h1 className="section-title text-4xl sm:text-6xl">Vote no craque da Copa</h1>
+            <p className="section-copy mt-4 max-w-2xl text-sm sm:text-base">
+              {!isLoggedIn ? 'Faça login para participar da votação social.'
+                : !isPremium ? `${dailyVotes}/1 voto grátis hoje. Premium libera votos ilimitados.`
+                : 'Premium ativo: votos ilimitados com peso 3x.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="premium-surface rounded-3xl px-5 py-4 text-center">
+              <div className="text-2xl font-black text-white">{players.length}</div>
+              <div className="text-[11px] font-black uppercase text-slate-400">jogadores</div>
+            </div>
+            <div className="premium-surface rounded-3xl px-5 py-4 text-center">
+              <div className="text-2xl font-black text-electric-lime">LIVE</div>
+              <div className="text-[11px] font-black uppercase text-slate-400">tempo real</div>
+            </div>
+            <div className="premium-surface hidden rounded-3xl px-5 py-4 text-center sm:block">
+              <div className="text-2xl font-black text-white">3x</div>
+              <div className="text-[11px] font-black uppercase text-slate-400">premium</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {loading && (
-        <div className="space-y-3">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="rounded-2xl p-4 animate-pulse"
-              style={{ background: 'rgba(255,255,255,0.04)', height: 140 }} />
-          ))}
+        <div className="grid gap-4 lg:grid-cols-3">
+          {[1,2,3].map(i => <div key={i} className="h-72 animate-pulse rounded-[24px] bg-white/[0.055] ring-1 ring-white/10" />)}
         </div>
       )}
 
-      {!loading && players.map((player, idx) => {
-        const voted = myVotes.has(player.id)
-        const bar = Math.round((player.vote_count / top) * 100)
-        const isGold = idx === 0
-        const barGradients = [
-          'linear-gradient(90deg,#FFD700,#FFA500)',
-          'linear-gradient(90deg,#C0C0C0,#A0A0A0)',
-          'linear-gradient(90deg,#CD7F32,#A06020)',
-          'linear-gradient(90deg,#667eea,#764ba2)',
-        ]
-        const barGrad = barGradients[Math.min(idx, 3)]
-
-        return (
-          <div key={player.id} className="mb-3 rounded-2xl overflow-hidden"
-            style={{
-              background: isGold ? 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.04))' : 'rgba(255,255,255,0.04)',
-              border: isGold ? '1px solid rgba(255,215,0,0.3)' : '1px solid rgba(255,255,255,0.07)'
-            }}>
-            <div className="p-4">
-              <div className="flex items-start gap-3 mb-3">
-                <span className="text-2xl w-8 text-center flex-shrink-0 mt-1">
-                  {medals[idx] || `#${idx + 1}`}
-                </span>
-                <PlayerPhoto player={player} size={60} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-black text-white text-base leading-tight">{player.name}</div>
-                  <div className="text-xs mb-1" style={{ color: '#888' }}>
-                    {player.flag} {player.country} · {player.position} · {player.club}
+      {!loading && topThree.length > 0 && (
+        <section className="grid gap-5 lg:grid-cols-3">
+          {topThree.map((player, idx) => {
+            const voted = myVotes.has(player.id)
+            const bar = Math.round((player.vote_count / top) * 100)
+            return (
+              <article key={player.id} className={`relative overflow-hidden glass-card magnetic-card border backdrop-blur-xl ${idx === 0 ? 'border-electric-lime/40 ring-2 ring-electric-lime/10' : 'border-white/10'}`}>
+                <div className="absolute left-0 top-0 h-1.5 w-full bg-hot-red" />
+                <div className="p-5 sm:p-6">
+                  <div className="mb-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black uppercase text-white">
+                      <Trophy className="h-3.5 w-3.5 text-electric-lime" />
+                      Top {idx + 1}
+                    </span>
+                    <span className="text-sm font-black text-electric-lime">{fmt(player.vote_count)} votos</span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="text-xs font-bold" style={{ color: '#4ade80' }}>⚽ {player.goals} gols</span>
-                    <span className="text-xs font-bold" style={{ color: '#60a5fa' }}>🎯 {player.assists} ast</span>
-                    <span className="text-xs font-bold" style={{ color: '#FFD700' }}>⭐ {player.rating}</span>
+                  <PlayerPhoto player={player} size={150} />
+                  <h2 className="mt-6 text-2xl font-black tracking-tight text-white">{player.name}</h2>
+                  <p className="mt-1.5 text-sm font-bold leading-6 text-slate-400">{player.flag} {player.country} · {player.position} · {player.club}</p>
+                  <div className="mt-5 grid grid-cols-3 gap-2.5">
+                    <div className="premium-surface rounded-2xl p-3"><Goal className="mb-1 h-4 w-4 text-electric-lime" /><div className="text-sm font-black">{player.goals}</div><div className="text-[10px] font-bold text-slate-400">gols</div></div>
+                    <div className="premium-surface rounded-2xl p-3"><Award className="mb-1 h-4 w-4 text-electric-lime" /><div className="text-sm font-black">{player.assists}</div><div className="text-[10px] font-bold text-slate-400">assist.</div></div>
+                    <div className="premium-surface rounded-2xl p-3"><Star className="mb-1 h-4 w-4 text-electric-lime" /><div className="text-sm font-black">{player.rating}</div><div className="text-[10px] font-bold text-slate-400">nota</div></div>
                   </div>
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full bg-hot-red transition-all duration-700" style={{ width: `${bar}%` }} />
+                  </div>
+                  <button onClick={() => handleVote(player)} disabled={voted}
+                    className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-wide transition-all active:scale-[0.98] ${voted ? 'bg-white/10 text-slate-500' : 'btn-hype'}`}>
+                    {voted ? <Check className="h-4 w-4" /> : <Flame className="h-4 w-4" />}
+                    {voted ? 'Você já votou' : 'Votar neste jogador'}
+                  </button>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="font-black text-white text-base">{fmt(player.vote_count)}</div>
-                  <div className="text-xs" style={{ color: '#4ade80' }}>votos</div>
-                </div>
-              </div>
+              </article>
+            )
+          })}
+        </section>
+      )}
 
-              {/* BARRA */}
-              <div className="h-1.5 rounded-full mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                <div className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${bar}%`, background: barGrad }} />
-              </div>
-
-              <button onClick={() => handleVote(player)} disabled={voted}
-                className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
-                style={{
-                  background: voted ? 'rgba(255,255,255,0.05)'
-                    : isGold ? 'linear-gradient(90deg,#FFD700,#FFA500)'
-                    : 'rgba(255,255,255,0.09)',
-                  color: voted ? '#555' : isGold ? '#000' : '#fff',
-                  border: !voted && !isGold ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                  cursor: voted ? 'default' : 'pointer'
-                }}>
-                {voted ? '✓ Você votou aqui' : 'Votar neste jogador'}
-              </button>
+      {!loading && rest.length > 0 && (
+        <section className="glass-card rounded-[32px] p-5 sm:p-7">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-electric-lime">Tabela geral</p>
+              <h2 className="text-2xl font-black tracking-tight text-white">Outros candidatos</h2>
             </div>
+            <BarChart3 className="h-6 w-6 text-electric-lime" />
           </div>
-        )
-      })}
+          <div className="space-y-3.5">
+            {rest.map((player, idx) => {
+              const voted = myVotes.has(player.id)
+              const bar = Math.round((player.vote_count / top) * 100)
+              return (
+                <div key={player.id} className="premium-surface rounded-3xl p-4 transition hover:border-white/20">
+                  <div className="flex items-center gap-4">
+                    <span className="w-8 text-center text-sm font-black text-slate-500">#{idx + 4}</span>
+                    <PlayerPhoto player={player} size={70} />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-black tracking-tight text-white">{player.name}</div>
+                      <div className="mt-0.5 text-xs font-bold leading-5 text-slate-400">{player.flag} {player.country} · {player.position} · {player.club}</div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-hot-red" style={{ width: `${bar}%` }} />
+                      </div>
+                    </div>
+                    <div className="hidden text-right sm:block">
+                      <div className="font-black text-white">{fmt(player.vote_count)}</div>
+                      <div className="text-xs font-bold text-slate-400">votos</div>
+                    </div>
+                    <button onClick={() => handleVote(player)} disabled={voted}
+                      className={`rounded-full px-4 py-2.5 text-xs font-black uppercase transition active:scale-[0.98] ${voted ? 'bg-white/10 text-slate-500' : 'bg-gradient-to-r from-electric-lime to-electric-blue text-night-950 hover:brightness-110'}`}>
+                      {voted ? 'Votado' : 'Votar'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
+
+
+

@@ -1,5 +1,14 @@
-.next/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
 node_modules/
+
+# next.js
+.next/
+out/
+
+# production
+build/
 
 # env files
 .env.local
@@ -17,6 +26,3 @@ pnpm-debug.log*
 # OS/editor
 .DS_Store
 Thumbs.db
-
-# accidental folder from bad extract
-{src/
