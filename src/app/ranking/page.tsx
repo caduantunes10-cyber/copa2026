@@ -128,7 +128,7 @@ export default function RankingPage() {
     setMyVotes(prev => new Set([...prev, player.id]))
     setDailyVotes(prev => prev + 1)
     setPlayers(prev =>
-      prev.map(p => p.id === player.id ? { ...p, vote_count: p.vote_count + (data.vote_weight || 1) } : p)
+      prev.map(p => p.id === player.id ? { ...p, vote_count: p.vote_count + 1 } : p)
         .sort((a, b) => b.vote_count - a.vote_count)
     )
     toast.success(`Voto registrado em ${player.short_name}`)
@@ -151,10 +151,10 @@ export default function RankingPage() {
             <p className="section-copy mt-4 max-w-2xl text-sm sm:text-base">
               {!isLoggedIn ? 'Faça login para participar da votação social.'
                 : !isPremium ? `${dailyVotes}/1 voto grátis hoje. Premium libera votos ilimitados.`
-                : 'Premium ativo: votos ilimitados com peso 3x.'}
+                : 'Premium ativo: votos ilimitados.'}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
             <div className="premium-surface rounded-3xl px-5 py-4 text-center">
               <div className="text-2xl font-black text-white">{players.length}</div>
               <div className="text-[11px] font-black uppercase text-slate-400">jogadores</div>
@@ -162,10 +162,6 @@ export default function RankingPage() {
             <div className="premium-surface rounded-3xl px-5 py-4 text-center">
               <div className="text-2xl font-black text-electric-lime">LIVE</div>
               <div className="text-[11px] font-black uppercase text-slate-400">tempo real</div>
-            </div>
-            <div className="premium-surface hidden rounded-3xl px-5 py-4 text-center sm:block">
-              <div className="text-2xl font-black text-white">3x</div>
-              <div className="text-[11px] font-black uppercase text-slate-400">premium</div>
             </div>
           </div>
         </div>

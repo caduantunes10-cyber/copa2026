@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Você já votou neste jogador.' }, { status: 409 })
   }
 
-  // Insere o voto (peso 3 para premium, 1 para free)
-  const vote_weight = profile.is_premium ? 3 : 1
+  // Insere o voto (peso 1 para todos os usuários)
+  const vote_weight = 1
   const { error } = await supabase
     .from('votes')
     .insert({ user_id: user.id, player_id, vote_weight })

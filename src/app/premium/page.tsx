@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react'
 import { BadgeCheck, BarChart3, Check, Crown, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
+import FriendComparisonSection from '@/components/premium/FriendComparisonSection'
 
 const BENEFITS = [
-  { icon: Zap, text: 'Votos ilimitados por dia' },
-  { icon: BarChart3, text: 'Voto com peso 3x no ranking' },
-  { icon: Sparkles, text: 'Enquetes Premium exclusivas' },
+  { icon: Users, text: 'Compare suas opiniões com amigos' },
   { icon: BadgeCheck, text: 'Badge VIP visível no seu perfil' },
-  { icon: Users, text: 'Destaque no feed social dos amigos' },
   { icon: ShieldCheck, text: 'Experiências premium da Copa' },
 ]
 
@@ -71,6 +69,18 @@ export default function PremiumPage() {
           <h1 className="section-title text-4xl sm:text-5xl">Você é Premium</h1>
           <p className="section-copy mx-auto mt-4 max-w-xl text-sm">Todos os benefícios estão ativos na sua conta.</p>
         </section>
+        
+        <section className="cinematic-panel rounded-[36px] p-6 sm:p-8">
+          <div className="mb-6 section-kicker">
+            <Users className="h-4 w-4" />
+            Comparar com Amigos
+          </div>
+          <h2 className="section-title text-2xl sm:text-3xl mb-4">Descubra o quão similar você é aos seus amigos</h2>
+          <p className="section-copy mb-6 text-sm">Compare suas opiniões sobre a Copa do Mundo e veja quem pensa como você.</p>
+          
+          <FriendComparisonSection />
+        </section>
+        
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map(b => {
             const Icon = b.icon
@@ -99,10 +109,9 @@ export default function PremiumPage() {
             Mais influência nas votações da Copa.
           </h1>
           <p className="section-copy mt-6 max-w-2xl text-base">
-            Votos ilimitados, peso 3x no ranking, badge VIP e destaque no feed social dos seus amigos.
+            Votos ilimitados, badge VIP e destaque no feed social dos seus amigos.
           </p>
-          <div className="mt-9 grid gap-3.5 sm:grid-cols-3">
-            <div className="premium-surface rounded-3xl p-4"><div className="text-2xl font-black text-white">3x</div><div className="text-xs font-black uppercase text-slate-400">peso no voto</div></div>
+          <div className="mt-9 grid gap-3.5 sm:grid-cols-2">
             <div className="premium-surface rounded-3xl p-4"><div className="text-2xl font-black text-white">∞</div><div className="text-xs font-black uppercase text-slate-400">votos por dia</div></div>
             <div className="premium-surface rounded-3xl p-4"><div className="text-2xl font-black text-electric-lime">VIP</div><div className="text-xs font-black uppercase text-slate-400">no feed</div></div>
           </div>
@@ -139,7 +148,7 @@ export default function PremiumPage() {
         <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.04em] text-white">Seu voto aparece mais forte no ranking e no feed.</h2>
         <div className="mt-7 grid gap-4 md:grid-cols-3">
           {[
-            { user: '@torcedor_vermelho', text: 'Com o voto 3x consegui puxar meu jogador para o top 3.' },
+            { user: '@torcedor_vermelho', text: 'Com votos ilimitados consegui puxar meu jogador para o top 3.' },
             { user: '@copa_social', text: 'O badge VIP deixa a participação muito mais visível no feed.' },
             { user: '@ranking_fc', text: 'Premium é para quem acompanha a disputa todos os dias.' },
           ].map(r => (
