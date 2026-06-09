@@ -118,15 +118,15 @@ export async function GET(
           question: item.question,
           user_option: item.user_option,
           friend_option: item.friend_option,
-          option_text: item.options[item.user_option]
+          option_text: Array.isArray(item.options) ? item.options[item.user_option] : item.options?.[item.user_option]?.label || 'Opção não encontrada'
         })),
         differences: differences.map(item => ({
           poll_id: item.poll_id,
           question: item.question,
           user_option: item.user_option,
           friend_option: item.friend_option,
-          user_option_text: item.options[item.user_option],
-          friend_option_text: item.options[item.friend_option]
+          user_option_text: Array.isArray(item.options) ? item.options[item.user_option] : item.options?.[item.user_option]?.label || 'Opção não encontrada',
+          friend_option_text: Array.isArray(item.options) ? item.options[item.friend_option] : item.options?.[item.friend_option]?.label || 'Opção não encontrada'
         })),
         limitedData
       }
