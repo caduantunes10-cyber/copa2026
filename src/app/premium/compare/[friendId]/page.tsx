@@ -82,6 +82,7 @@ export default function FriendComparisonPage() {
       }
 
       const result = await response.json()
+      console.log('COMPARISON DATA', result.data)
       setComparisonData(result.data)
     } catch (err) {
       setError('Failed to load comparison')
@@ -182,6 +183,8 @@ export default function FriendComparisonPage() {
   }
 
   const { compatibility_score, friend_profile, summary, agreements, differences, limitedData } = comparisonData
+  console.log('AGREEMENTS', agreements)
+  console.log('DIFFERENCES', differences)
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

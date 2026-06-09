@@ -101,6 +101,27 @@ export async function GET(
 
     const limitedData = totalCompared < 3
 
+    const finalAgreements = agreements.map(item => ({
+          poll_id: item.poll_id,
+          question: item.question,
+          user_option: item.user_option,
+          friend_option: item.friend_option,
+          option_text: Array.isArray(item.options) ? item.options[item.user_option] : (item.options?.[item.user_option]?.label || 'Opção não encontrada')
+        }))
+        const finalDifferences = differences.map(item => ({
+          poll_id: item.poll_id,
+          question: item.question,
+          user_option: item.user_option,
+          friend_option: item.friend_option,
+          user_option_text: Array.isArray(item.options) ? item.options[item.user_option] : (item.options?.[item.user_option]?.label || 'Opção não encontrada'),
+          friend_option_text: Array.isArray(item.options) ? item.options[item.friend_option] : (item.options?.[item.friend_option]?.label || 'Opção não encontrada')
+        }))
+        
+        console.log('API RESPONSE PAYLOAD:', JSON.stringify({
+          agreements: finalAgreements,
+          differences: finalDifferences
+        }, null, 2))
+
     return NextResponse.json({
       success: true,
       data: {
@@ -113,21 +134,8 @@ export async function GET(
           compatibility_percentage: compatibilityScore,
           message: limitedData ? 'Comparison based on limited data.' : null
         },
-        agreements: agreements.map(item => ({
-          poll_id: item.poll_id,
-          question: item.question,
-          user_option: item.user_option,
-          friend_option: item.friend_option,
-          option_text: Array.isArray(item.options) ? item.options[item.user_option] : (item.options?.[item.user_option]?.label || 'Opção não encontrada')
-        })),
-        differences: differences.map(item => ({
-          poll_id: item.poll_id,
-          question: item.question,
-          user_option: item.user_option,
-          friend_option: item.friend_option,
-          user_option_text: Array.isArray(item.options) ? item.options[item.user_option] : (item.options?.[item.user_option]?.label || 'Opção não encontrada'),
-          friend_option_text: Array.isArray(item.options) ? item.options[item.friend_option] : (item.options?.[item.friend_option]?.label || 'Opção não encontrada')
-        })),
+        agreements: finalAgreements,
+        differences: finalDifferences,
         limitedData
       }
     })
