@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Search, Share2, TrendingUp, UserPlus, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity, Profile } from '@/types'
@@ -62,6 +63,8 @@ function UserCard({
   isFollowing: boolean
   onToggleFollow: (id: string, following: boolean) => void
 }) {
+  const router = useRouter()
+
   return (
     <div className="flex items-center justify-between p-3 border rounded-xl">
       <div className="flex items-center gap-3">
@@ -72,14 +75,24 @@ function UserCard({
         </div>
       </div>
 
-      <button
-        onClick={() => onToggleFollow(profile.id, isFollowing)}
-        className={`px-3 py-1 rounded-full text-sm font-bold ${
-          isFollowing ? 'bg-gray-200' : 'bg-purple-600 text-white'
-        }`}
-      >
-        {isFollowing ? 'Seguindo' : 'Seguir'}
-      </button>
+      <div className="flex gap-2">
+        {isFollowing && (
+          <button
+            onClick={() => router.push(`/premium/compare/${profile.id}`)}
+            className="px-3 py-1 rounded-full text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Comparar opiniões
+          </button>
+        )}
+        <button
+          onClick={() => onToggleFollow(profile.id, isFollowing)}
+          className={`px-3 py-1 rounded-full text-sm font-bold ${
+            isFollowing ? 'bg-gray-200' : 'bg-purple-600 text-white'
+          }`}
+        >
+          {isFollowing ? 'Seguindo' : 'Seguir'}
+        </button>
+      </div>
     </div>
   )
 }
