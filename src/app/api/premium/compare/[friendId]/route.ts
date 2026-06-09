@@ -30,7 +30,8 @@ export async function GET(
     const { data: friendship, error: friendshipError } = await supabase
       .from('friendships')
       .select('*')
-      .or(`(follower_id.eq.${user.id},following_id.eq.${friendId}),(follower_id.eq.${friendId},following_id.eq.${user.id})`)
+      .eq('follower_id', user.id)
+      .eq('following_id', friendId)
       .single()
 
     if (friendshipError) {
