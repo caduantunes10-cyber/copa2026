@@ -57,7 +57,14 @@ export async function GET(
       })
 
     if (comparisonError) {
-      console.error('Comparison error:', comparisonError)
+      console.error('Comparison RPC error details:', {
+        message: comparisonError.message,
+        details: comparisonError.details,
+        hint: comparisonError.hint,
+        code: comparisonError.code,
+        userId: user.id,
+        friendId: friendId
+      })
       return NextResponse.json({ error: 'Failed to get comparison' }, { status: 500 })
     }
 
