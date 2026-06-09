@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   // Lista de quem eu sigo
   if (type === 'following') {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('friendships')
       .select(`profile:profiles!following_id(id, username, full_name, avatar_url, is_premium, total_votes)`)
       .eq('follower_id', user.id)

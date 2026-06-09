@@ -1,5 +1,9 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Bell, Calendar, ChevronRight, Circle, Clock, Flag, Heart, MessageCircle, Shield, Star, TrendingUp, Users, Zap } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const friendActivity = [
   { name: 'Mariana S.', text: 'reagiu ao segundo gol do Brasil', time: 'há 3m', trend: 'Ao vivo', avatar: 'MS' },
@@ -14,13 +18,16 @@ const fanFeed = [
   { name: 'Henrique V.', handle: '@henriv', time: 'há 5m', text: 'Neymar é diferente! Decide demais! ⭐', comments: 15, likes: 32, avatar: 'HV' },
 ]
 
-const trendingOpinions = [
-  { name: 'Lucas Pereira', text: 'Brasil controla o jogo pelo meio', avatar: 'LP' },
-  { name: 'Mariana S.', text: 'O segundo tempo está mais aberto', avatar: 'MS' },
-  { name: 'Felipe C.', text: 'Sérvia ainda pode reagir em bola aérea', avatar: 'FC' },
-  { name: 'João V.', text: 'Vini Jr. é o jogador mais perigoso', avatar: 'JV' },
-  { name: 'Beatriz M.', text: 'A torcida mudou o clima da partida', avatar: 'BM' },
-]
+type HomePoll = {
+  id: string
+  question: string
+  options: Array<{ label: string } | string>
+}
+
+type PollResults = Record<string, Record<number, number>>
+type SelectedPollOptions = Record<string, number>
+
+const HOME_POLLS_LIMIT = 25
 
 const matches = [
   { time: 'AO VIVO', status: '2ºT · 72:34', left: '🇧🇷', right: '🇷🇸', score: '2 x 1', code: 'BRA', codeRight: 'SRV', live: true },
@@ -54,6 +61,157 @@ function Avatar({ label, green = false }: { label: string, green?: boolean }) {
 }
 
 export default function HomePage() {
+  const [polls, setPolls] = useState<HomePoll[]>([])
+  const [votedPolls, setVotedPolls] = useState<Set<string>>(new Set())
+  const [selectedPollOptions, setSelectedPollOptions] = useState<SelectedPollOptions>({})
+  const [pollResults, setPollResults] = useState<PollResults>({})
+  const [resultsLoading, setResultsLoading] = useState<Set<string>>(new Set())
+  const [isHydratingVotes, setIsHydratingVotes] = useState(true)
+  const [pollsReady, setPollsReady] = useState(false)
+  const latestPollHydrationRequest = useRef(0)
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function loadPolls() {
+      const requestId = Date.now()
+      latestPollHydrationRequest.current = requestId
+      setPollsReady(false)
+      setIsHydratingVotes(true)
+      setVotedPolls(new Set())
+      setSelectedPollOptions({})
+      console.log('[Home polls] query is running on:', typeof window === 'undefined' ? 'server' : 'client')
+
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      console.log('[Home polls] authenticated user:', authData.user?.id || null)
+      console.log('[Home polls] auth error:', authError)
+
+      const readable = await supabase
+        .from('polls')
+        .select('id', { count: 'exact', head: true })
+      console.log('[Home polls] readable polls count:', readable.count)
+      console.log('[Home polls] readable polls error:', readable.error)
+
+      const result = await supabase
+        .from('polls')
+        .select('id, question, options')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(HOME_POLLS_LIMIT)
+
+      console.log('[Home polls] active polls data:', result.data)
+      console.log('[Home polls] active polls error:', result.error)
+      console.log('[Home polls] active polls count:', result.data?.length || 0)
+      console.log('[Home polls] setPolls payload:', result.data || [])
+      console.log('[Home polls] setPolls payload length:', (result.data || []).length)
+
+      const loadedPolls = (result.data || []) as HomePoll[]
+      let nextResults: PollResults = {}
+      let nextVotedPolls = new Set<string>()
+      let nextSelectedOptions: SelectedPollOptions = {}
+
+      if (result.data?.length) {
+        const pollIds = result.data.map(poll => poll.id)
+        const votesResult = await supabase
+          .from('poll_votes')
+          .select('poll_id, option_index')
+          .in('poll_id', pollIds)
+
+        console.log('[Home poll results] votes data:', votesResult.data)
+        console.log('[Home poll results] votes error:', votesResult.error)
+
+        if (votesResult.data) {
+          nextResults = votesResult.data.reduce<PollResults>((acc, vote) => {
+            acc[vote.poll_id] = acc[vote.poll_id] || {}
+            acc[vote.poll_id][vote.option_index] = (acc[vote.poll_id][vote.option_index] || 0) + 1
+            return acc
+          }, {})
+        }
+      }
+
+      if (authData.user && result.data?.length) {
+        const pollIds = result.data.map(poll => poll.id)
+        const existingVotes = await supabase
+          .from('poll_votes')
+          .select('poll_id, option_index')
+          .eq('user_id', authData.user.id)
+          .in('poll_id', pollIds)
+
+        console.log('[Home poll vote] existing votes data:', existingVotes.data)
+        console.log('[Home poll vote] existing votes error:', existingVotes.error)
+
+        if (existingVotes.data) {
+          nextVotedPolls = new Set(existingVotes.data.map(vote => vote.poll_id))
+          nextSelectedOptions = existingVotes.data.reduce<SelectedPollOptions>((acc, vote) => {
+            acc[vote.poll_id] = vote.option_index
+            return acc
+          }, {})
+        }
+      }
+
+      if (latestPollHydrationRequest.current !== requestId) return
+
+      setPolls(loadedPolls)
+      setPollResults(nextResults)
+      setResultsLoading(new Set())
+      setVotedPolls(nextVotedPolls)
+      setSelectedPollOptions(nextSelectedOptions)
+      setIsHydratingVotes(false)
+      setPollsReady(true)
+    }
+
+    loadPolls()
+  }, [])
+
+  useEffect(() => {
+    console.log('[Home polls] polls state after update:', polls)
+    console.log('[Home polls] polls state length after update:', polls.length)
+  }, [polls])
+
+  async function handlePollVote(poll: HomePoll, optionIndex: number) {
+    const { data: { user } } = await supabase.auth.getUser()
+    console.log('[Home poll vote] clicked poll id:', poll.id)
+    console.log('[Home poll vote] clicked option index:', optionIndex)
+    console.log('[Home poll vote] authenticated user id:', user?.id || null)
+
+    if (!user || votedPolls.has(poll.id)) {
+      console.log('[Home poll vote] blocked before insert:', { hasUser: !!user, alreadyVoted: votedPolls.has(poll.id) })
+      return
+    }
+
+    const payload = {
+      user_id: user.id,
+      poll_id: poll.id,
+      option_index: optionIndex,
+      created_at: new Date().toISOString(),
+    }
+
+    console.log('[Home poll vote] insert payload:', payload)
+
+    const { data, error } = await supabase
+      .from('poll_votes')
+      .insert(payload)
+      .select('id, user_id, poll_id, option_index, created_at')
+      .single()
+
+    console.log('[Home poll vote] insert result:', data)
+    console.log('[Home poll vote] insert error:', error)
+
+    if (!error || error.code === '23505') {
+      setVotedPolls(prev => new Set([...prev, poll.id]))
+      setSelectedPollOptions(prev => ({ ...prev, [poll.id]: optionIndex }))
+      setPollResults(prev => ({
+        ...prev,
+        [poll.id]: {
+          ...(prev[poll.id] || {}),
+          [optionIndex]: ((prev[poll.id] || {})[optionIndex] || 0) + (error ? 0 : 1),
+        },
+      }))
+    }
+  }
+
+  console.log('[Home] component rendered: src/app/page.tsx -> Enquetes do Dia')
+  console.log('[Home polls] HomePage render polls.length:', polls.length)
+
   return (
     <div className="pb-10 lg:pb-6">
       <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_320px]">
@@ -74,21 +232,7 @@ export default function HomePage() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <SectionHeader title="Opiniões em alta" action="Ver conversas" />
-            <div className="space-y-3">
-              {trendingOpinions.map((user, index) => (
-                <div key={user.name} className="flex items-center gap-3">
-                  <span className="w-4 text-[12px] font-black text-[#111827]">{index + 1}</span>
-                  <Avatar label={user.avatar} green={index === 0} />
-                  <span className="min-w-0 flex-1 truncate text-[12px] font-bold text-[#111827]">{user.text}</span>
-                </div>
-              ))}
-            </div>
-            <Link href="/amigos" className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-[#F6F1FF] px-4 py-3 text-[11px] font-black uppercase text-[#6C3BFF]">
-              Ver conversas →
-            </Link>
-          </Card>
+          <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} onVote={handlePollVote} />
         </aside>
 
         <main className="space-y-4">
@@ -122,7 +266,7 @@ export default function HomePage() {
 
           <div className="grid gap-4 md:hidden">
             <FanFeedCard />
-            <TrendingCard />
+            <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} onVote={handlePollVote} />
           </div>
 
           <TodayMatches />
@@ -169,20 +313,80 @@ function FanFeedCard() {
   )
 }
 
-function TrendingCard() {
+function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, onVote }: {
+  polls: HomePoll[]
+  votedPolls: Set<string>
+  selectedPollOptions: SelectedPollOptions
+  pollResults: PollResults
+  resultsLoading: Set<string>
+  isHydratingVotes: boolean
+  pollsReady: boolean
+  onVote: (poll: HomePoll, optionIndex: number) => void
+}) {
+  console.log('[Home polls] DailyPollsCard render polls.length:', polls.length)
+  if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
+
   return (
     <Card className="p-5">
-      <SectionHeader title="Opiniões em alta" action="Ver conversas" />
-      <div className="space-y-3">
-        {trendingOpinions.map((user, index) => (
-          <div key={user.name} className="flex items-center gap-3">
-            <span className="w-4 text-[12px] font-black">{index + 1}</span>
-            <Avatar label={user.avatar} green={index === 0} />
-            <span className="flex-1 text-[12px] font-bold">{user.text}</span>
+      <SectionHeader title="Enquetes do Dia" action="Votar agora" />
+      {!pollsReady || isHydratingVotes ? (
+        <p className="rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-[#6B7280] ring-1 ring-[#EEF0F4]">Carregando...</p>
+      ) : (
+        <div className="space-y-4">
+        {polls.map((poll, index) => (
+          <div key={poll.id} className="rounded-2xl bg-[#FBFCFE] p-3 ring-1 ring-black/[0.03]">
+            <p className="text-[12px] font-black leading-5 text-[#111827]">{index === 0 ? '🗳️ ' : ''}{poll.question}</p>
+            <div className="mt-3 grid gap-2">
+              {votedPolls.has(poll.id) ? (
+                resultsLoading.has(poll.id) ? (
+                  <p className="rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-[#6B7280] ring-1 ring-[#EEF0F4]">Carregando resultados...</p>
+                ) : (
+                  (() => {
+                    const results = pollResults[poll.id] || {}
+                    const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0)
+
+                    return (
+                      <div className="space-y-2">
+                        {poll.options.map((option, optionIndex) => {
+                          const label = typeof option === 'string' ? option : option.label
+                          const count = results[optionIndex] || 0
+                          const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
+                          const selected = selectedPollOptions[poll.id] === optionIndex
+
+                          return (
+                            <div key={`${poll.id}-${optionIndex}`} className={`rounded-xl px-3 py-2 text-[11px] font-black ring-1 ${selected ? 'bg-[#E8FFF0] text-[#16C45B] ring-[#16C45B]/20' : 'bg-white text-[#111827] ring-[#EEF0F4]'}`}>
+                              <div className="flex items-center justify-between gap-3">
+                                <span>{label}</span>
+                                <span>{percentage}% ({count} votos)</span>
+                              </div>
+                              <div className="mt-2 h-1.5 rounded-full bg-[#EEF0F4]">
+                                <div className={`h-full rounded-full ${selected ? 'bg-[#16C45B]' : 'bg-[#6C3BFF]'}`} style={{ width: `${percentage}%` }} />
+                              </div>
+                            </div>
+                          )
+                        })}
+                        <p className="text-[10px] font-black uppercase text-[#6B7280]">{totalVotes} votos</p>
+                      </div>
+                    )
+                  })()
+                )
+              ) : (
+                poll.options.map((option, optionIndex) => {
+                  const label = typeof option === 'string' ? option : option.label
+                  return (
+                    <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
+                      className="rounded-xl bg-white px-3 py-2 text-left text-[11px] font-black text-[#111827] ring-1 ring-[#EEF0F4] transition hover:bg-[#F6F1FF] hover:text-[#6C3BFF]">
+                      {label}
+                    </button>
+                  )
+                })
+              )}
+            </div>
           </div>
         ))}
       </div>
-      <div className="mt-5 overflow-hidden rounded-[22px] bg-gradient-to-br from-[#E9FFF2] to-[#F6F1FF] p-5 text-center text-[#111827]"><TrendingUp className="mx-auto h-9 w-9 text-[#6C3BFF]" /><Link href="/amigos" className="mt-3 inline-flex text-[12px] font-black uppercase">Ver conversas →</Link></div>
+      )}
+      {pollsReady && !isHydratingVotes && polls.length === 0 && <p className="text-[12px] font-semibold text-[#6B7280]">Nenhuma enquete ativa no momento.</p>}
     </Card>
   )
 }
