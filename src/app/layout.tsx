@@ -25,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} min-h-screen bg-[#F5F6F8] text-[#111827] antialiased`}>
+      <body className={`${inter.className} min-h-screen bg-[#F7F8FC] text-[#0F172A] antialiased`}>
         <Header />
         <main className="mx-auto w-full max-w-[1240px] px-4 pb-28 pt-4 sm:px-5 lg:px-6">
           {children}
