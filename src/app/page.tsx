@@ -21,27 +21,30 @@ const HOME_POLLS_LIMIT = 25
 
 function HeroSection() {
   return (
-    <div className="relative flex min-h-[160px] items-center overflow-hidden rounded-[24px] bg-white px-6 shadow-[0_4px_24px_rgba(15,23,42,0.07)] ring-1 ring-[#EAECF0] sm:min-h-[180px] sm:rounded-[28px] sm:px-8 lg:min-h-[200px]">
-      <div className="pointer-events-none absolute left-0 top-0 h-[3px] w-full bg-gradient-to-r from-[#5B4BFF] to-[#18C964]" />
-      <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[#5B4BFF]/[0.05]" />
-      <div className="pointer-events-none absolute -right-4 bottom-0 h-32 w-32 rounded-full bg-[#18C964]/[0.06]" />
+    <div
+      className="relative flex min-h-[180px] items-center overflow-hidden rounded-[24px] px-7 shadow-[0_8px_32px_rgba(34,197,94,0.15),0_2px_8px_rgba(0,0,0,0.06)] sm:min-h-[200px] sm:rounded-[28px] sm:px-10 lg:min-h-[220px]"
+      style={{ background: 'linear-gradient(135deg, #064E3B 0%, #065F46 40%, #1E3A8A 100%)' }}
+    >
+      <div className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ background: 'radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute right-40 bottom-0 h-32 w-32 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%)' }} />
       <div className="relative flex-1 py-8">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#5B4BFF]/[0.08] px-3 py-1 text-[11px] font-semibold text-[#5B4BFF]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#18C964]" />
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/[0.15] bg-white/[0.10] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22C55E]" />
           Copa do Mundo 2026
         </div>
-        <h1 className="mt-2 text-[22px] font-[800] leading-[1.2] tracking-[-0.03em] text-[#0F172A] sm:text-[26px] lg:text-[30px]">
+        <h1 className="mt-3 text-[26px] font-[800] leading-[1.15] tracking-[-0.03em] text-white drop-shadow-sm sm:text-[32px] lg:text-[36px]">
           Descubra quem pensa<br className="hidden sm:block" /> como você.
         </h1>
-        <p className="mt-2 max-w-md text-[13px] leading-relaxed text-[#667085] sm:text-[15px]">
+        <p className="mt-2.5 max-w-md text-[13px] leading-relaxed text-white/60 sm:text-[15px]">
           Vote nas discussões da Copa e compare opiniões com seus amigos.
         </p>
       </div>
       <div className="pointer-events-none absolute bottom-0 right-6 hidden select-none sm:block" aria-hidden="true">
         <div className="relative">
-          <div className="pointer-events-none absolute -left-8 top-2 h-16 w-16 rounded-full bg-[#5B4BFF]/[0.07]" />
-          <div className="pointer-events-none absolute -right-2 bottom-6 h-10 w-10 rounded-full bg-[#18C964]/[0.09]" />
-          <span className="relative block text-[130px] leading-none lg:text-[150px]">🏆</span>
+          <div className="pointer-events-none absolute -left-10 top-0 h-20 w-20 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.20) 0%, transparent 70%)' }} />
+          <div className="pointer-events-none absolute -right-4 bottom-8 h-12 w-12 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)' }} />
+          <img src="/trophy.svg" alt="" aria-hidden="true" className="relative block h-[130px] w-auto lg:h-[150px]" style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25))' }} />
         </div>
       </div>
     </div>
@@ -203,10 +206,10 @@ export default function HomePage() {
   const featuredPoll = pollsReady && !isHydratingVotes && polls.length > 0 ? polls[0] : null
 
   return (
-    <div className="pb-10 lg:pb-6">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="pb-10 lg:pb-8">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_308px]">
 
-        <main className="min-w-0 space-y-5">
+        <main className="min-w-0 space-y-6">
           <HeroSection />
           {featuredPoll && (
             <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} onVote={handlePollVote} />
@@ -219,7 +222,7 @@ export default function HomePage() {
           </div>
         </main>
 
-        <aside className="hidden space-y-4 lg:block">
+        <aside className="hidden space-y-4 lg:block lg:pt-0">
           <FriendsCtaCard />
           <PremiumCtaCard />
         </aside>
@@ -240,35 +243,47 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   const totalVotes = Object.values(results).reduce((sum, c) => sum + c, 0)
   const voted = votedPolls.has(poll.id)
   return (
-    <section className="overflow-hidden rounded-[28px] bg-[#F4FFF7] p-6 ring-1 ring-[#D6F5E3] shadow-[0_12px_40px_rgba(24,201,100,0.08)] sm:p-8 lg:min-h-[420px]">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="inline-flex h-[28px] items-center rounded-full bg-[#ECFDF3] px-3 text-[12px] font-bold text-[#16A34A] ring-1 ring-[#D9F4E5]">🔥 ENQUETE EM DESTAQUE</span>
-        {voted && <span className="inline-flex h-6 items-center rounded-full bg-[#ECFDF3] px-[10px] text-[11px] font-semibold text-[#16A34A]">✓ Votado</span>}
+    <section className="group overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(0,0,0,0.10)] hover:-translate-y-[2px] sm:p-8 lg:min-h-[440px]">
+      <div className="mb-6 flex items-center justify-between">
+        <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 text-[11px] font-bold uppercase tracking-wider text-[#16A34A]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
+          Enquete em destaque
+        </span>
+        {voted && (
+          <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#F0FDF4] px-3 text-[11px] font-semibold text-[#16A34A] ring-1 ring-[#BBF7D0]">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Votado
+          </span>
+        )}
       </div>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-8">
         <div className="hidden shrink-0 lg:flex lg:flex-col lg:justify-center">
-          <div className="flex h-[200px] w-[220px] items-center justify-center rounded-[20px]" style={{ background: 'linear-gradient(135deg, #EEF7FF, #F3FFF6)' }} aria-hidden="true">
-            <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="38" fill="#18C964" fillOpacity="0.10" />
-              <circle cx="50" cy="50" r="27" fill="#18C964" fillOpacity="0.16" />
-              <circle cx="50" cy="50" r="38" stroke="#18C964" strokeOpacity="0.2" strokeWidth="1.5" fill="none" />
-              <path d="M50 25C36.2 25 25 36.2 25 50C25 63.8 36.2 75 50 75C63.8 75 75 63.8 75 50C75 36.2 63.8 25 50 25Z" fill="white" stroke="#18C964" strokeWidth="1.8"/>
-              <path d="M50 25L54.5 36L50 40L45.5 36L50 25Z" fill="#18C964" fillOpacity="0.55"/>
-              <path d="M75 50L64.5 46L62.5 50L64.5 54L75 50Z" fill="#18C964" fillOpacity="0.55"/>
-              <path d="M25 50L35.5 54L37.5 50L35.5 46L25 50Z" fill="#18C964" fillOpacity="0.55"/>
-              <path d="M57.5 67.5L54 58L50 59L46 58L42.5 67.5L50 71L57.5 67.5Z" fill="#18C964" fillOpacity="0.55"/>
-              <path d="M37.5 32.5L41.5 42L45.5 40L45.5 36L37.5 32.5Z" fill="#5B4BFF" fillOpacity="0.28"/>
-              <path d="M62.5 32.5L54.5 36L54.5 40L58.5 42L62.5 32.5Z" fill="#5B4BFF" fillOpacity="0.28"/>
-              <path d="M64.5 54L58.5 56.5L57.5 61L62 65.5L64.5 54Z" fill="#5B4BFF" fillOpacity="0.28"/>
-              <path d="M35.5 54L38 65.5L42.5 61L41.5 56.5L35.5 54Z" fill="#5B4BFF" fillOpacity="0.28"/>
-              <circle cx="50" cy="50" r="7" fill="#18C964" fillOpacity="0.55"/>
-              <circle cx="50" cy="50" r="3" fill="#18C964"/>
+          <div
+            className="flex h-[220px] w-[240px] items-center justify-center rounded-[20px] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_16px_rgba(34,197,94,0.12)]"
+            style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #EFF6FF 100%)' }}
+            aria-hidden="true"
+          >
+            <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="55" cy="55" r="42" fill="#22C55E" fillOpacity="0.08" />
+              <circle cx="55" cy="55" r="30" fill="#22C55E" fillOpacity="0.12" />
+              <circle cx="55" cy="55" r="42" stroke="#22C55E" strokeOpacity="0.18" strokeWidth="1.5" fill="none" />
+              <circle cx="55" cy="55" r="20" fill="white" stroke="#22C55E" strokeWidth="1.8" />
+              <path d="M55 27L60 39L55 44L50 39L55 27Z" fill="#22C55E" fillOpacity="0.6"/>
+              <path d="M83 55L71 50L69 55L71 60L83 55Z" fill="#22C55E" fillOpacity="0.6"/>
+              <path d="M27 55L39 60L41 55L39 50L27 55Z" fill="#22C55E" fillOpacity="0.6"/>
+              <path d="M63 76L59 65L55 66L51 65L47 76L55 80L63 76Z" fill="#22C55E" fillOpacity="0.6"/>
+              <path d="M41 34L46 46L50 44L50 39L41 34Z" fill="#2563EB" fillOpacity="0.25"/>
+              <path d="M69 34L60 39L60 44L64 46L69 34Z" fill="#2563EB" fillOpacity="0.25"/>
+              <path d="M71 60L65 63L63 68L68 73L71 60Z" fill="#2563EB" fillOpacity="0.25"/>
+              <path d="M39 60L42 73L47 68L45 63L39 60Z" fill="#2563EB" fillOpacity="0.25"/>
+              <circle cx="55" cy="55" r="7" fill="#22C55E" fillOpacity="0.5"/>
+              <circle cx="55" cy="55" r="3" fill="#22C55E"/>
             </svg>
           </div>
         </div>
         <div className="flex flex-1 min-w-0 flex-col justify-center">
-          <p className="mb-5 text-[24px] font-[800] leading-[1.15] text-[#0F172A] sm:text-[28px] lg:text-[32px]">{poll.question}</p>
-          <div className="space-y-2.5">
+          <p className="mb-6 text-[22px] font-[700] leading-[1.2] text-[#0F172A] sm:text-[26px] lg:text-[28px]">{poll.question}</p>
+          <div className="space-y-3">
             {voted ? (
               poll.options.map((option, optionIndex) => {
                 const label = typeof option === 'string' ? option : option.label
@@ -276,13 +291,20 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                 const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                 const selected = selectedPollOptions[poll.id] === optionIndex
                 return (
-                  <div key={`feat-${poll.id}-${optionIndex}`} className={`flex h-12 flex-col justify-center rounded-[14px] px-4 ring-1 ${selected ? 'bg-[#ECFDF3] text-[#16A34A] ring-[#16A34A]/25 font-semibold' : 'bg-white text-[#374151] ring-[#EAECF0] font-medium'}`}>
-                    <div className="flex items-center justify-between gap-3 text-[13px]">
-                      <span className="truncate">{label}</span>
-                      <span className="shrink-0 tabular-nums text-[12px] font-semibold text-[#667085]">{percentage}%</span>
+                  <div key={`feat-${poll.id}-${optionIndex}`} className={`rounded-[14px] px-4 py-3 ring-1 transition-all ${
+                    selected
+                      ? 'bg-[#F0FDF4] ring-[#22C55E]/30 shadow-[0_2px_8px_rgba(34,197,94,0.12)]'
+                      : 'bg-[#F8FAFC] ring-black/[0.05]'
+                  }`}>
+                    <div className="flex items-center justify-between gap-3 text-[13px] font-semibold">
+                      <span className={`truncate ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
+                      <span className={`shrink-0 tabular-nums text-[13px] font-bold ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                     </div>
-                    <div className="mt-1 h-1.5 w-full rounded-full bg-[#EAECF0]">
-                      <div className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-[#18C964]' : 'bg-[#5B4BFF]/40'}`} style={{ width: `${percentage}%` }} />
+                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#2563EB]/60'}`}
+                        style={{ width: `${percentage}%` }}
+                      />
                     </div>
                   </div>
                 )
@@ -291,8 +313,10 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
               poll.options.map((option, optionIndex) => {
                 const label = typeof option === 'string' ? option : option.label
                 return (
-                  <button key={`feat-${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                    className="flex h-12 w-full items-center rounded-[14px] bg-white px-4 text-left text-[14px] font-semibold text-[#374151] ring-1 ring-[#EAECF0] transition-all hover:bg-[#F5F3FF] hover:text-[#5B4BFF] hover:ring-[#5B4BFF]/20 active:scale-[0.99]">
+                  <button
+                    key={`feat-${poll.id}-${optionIndex}`}
+                    onClick={() => onVote(poll, optionIndex)}
+                    className="flex h-12 w-full items-center rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[14px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
                     {label}
                   </button>
                 )
@@ -300,7 +324,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
             )}
           </div>
           {voted && totalVotes > 0 && (
-            <p className="mt-3 text-[12px] text-[#667085]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
+            <p className="mt-3 text-[12px] font-medium text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
           )}
         </div>
       </div>
@@ -322,12 +346,12 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
   return (
-    <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_4px_20px_rgba(15,23,42,0.05)] ring-1 ring-[#EAECF0]">
-      <div className="border-b border-[#EAECF0] px-5 py-4">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-[18px] font-bold text-[#0F172A]">Enquetes do dia</h2>
+    <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05]">
+      <div className="border-b border-black/[0.05] px-6 py-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-[18px] font-[700] text-[#0F172A]">Enquetes do dia</h2>
           {pollsReady && !isHydratingVotes && polls.length > 0 && (
-            <span className="text-[12px] font-medium text-[#667085]">{polls.length} discussões ativas</span>
+            <span className="rounded-full bg-[#F0FDF4] px-2.5 py-1 text-[11px] font-bold text-[#16A34A]">{polls.length} ativas</span>
           )}
         </div>
       </div>
@@ -335,17 +359,17 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       {!pollsReady || isHydratingVotes ? (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse rounded-[18px] bg-[#F8F9FA] p-4 ring-1 ring-[#EAECF0]">
+            <div key={i} className="animate-pulse rounded-[20px] bg-[#F8FAFC] p-4 ring-1 ring-black/[0.04]">
               <div className="mb-3 flex items-start gap-3">
-                <div className="h-10 w-10 shrink-0 rounded-[12px] bg-slate-200" />
+                <div className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-200" />
                 <div className="flex-1 pt-1">
-                  <div className="mb-1.5 h-3 w-full rounded bg-slate-200" />
-                  <div className="h-3 w-3/5 rounded bg-slate-200" />
+                  <div className="mb-1.5 h-3 w-full rounded-full bg-slate-200" />
+                  <div className="h-3 w-3/5 rounded-full bg-slate-200" />
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="h-9 rounded-[10px] bg-slate-200" />
-                <div className="h-9 rounded-[10px] bg-slate-200" />
+                <div className="h-9 rounded-[12px] bg-slate-200" />
+                <div className="h-9 rounded-[12px] bg-slate-200" />
               </div>
             </div>
           ))}
@@ -353,14 +377,17 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
         {polls.map((poll) => (
-          <div key={poll.id} className="rounded-[20px] bg-white p-4 ring-1 ring-[#EAECF0] shadow-[0_2px_12px_rgba(15,23,42,0.05)] flex flex-col gap-3 transition-shadow hover:shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
+          <div key={poll.id} className="group/card rounded-[20px] bg-white p-4 ring-1 ring-black/[0.05] shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-3 transition-all duration-250 hover:shadow-[0_8px_24px_rgba(0,0,0,0.09)] hover:-translate-y-[3px]">
             <div className="flex items-start gap-3">
-              <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-[#F0FDF4] text-[18px] leading-none select-none" aria-hidden="true">⚽</div>
+              <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] text-[18px] leading-none select-none shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">⚽</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[14px] font-bold leading-[20px] text-[#0F172A]">{poll.question}</p>
+                  <p className="text-[14px] font-[700] leading-[1.4] text-[#0F172A]">{poll.question}</p>
                   {votedPolls.has(poll.id) && (
-                    <span className="shrink-0 inline-flex h-6 items-center rounded-full bg-[#ECFDF3] px-[10px] text-[11px] font-semibold text-[#16A34A]">✓ Votado</span>
+                    <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 text-[10px] font-bold text-[#16A34A] ring-1 ring-[#BBF7D0]">
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Votado
+                    </span>
                   )}
                 </div>
               </div>
@@ -381,13 +408,20 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                           const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                           const selected = selectedPollOptions[poll.id] === optionIndex
                           return (
-                            <div key={`${poll.id}-${optionIndex}`} className={`flex h-9 flex-col justify-center rounded-[10px] px-3 text-[12px] ring-1 ${selected ? 'bg-[#ECFDF3] text-[#16A34A] ring-[#16A34A]/20 font-semibold' : 'bg-white text-[#374151] ring-[#EAECF0] font-medium'}`}>
+                            <div key={`${poll.id}-${optionIndex}`} className={`flex h-9 flex-col justify-center rounded-[10px] px-3 text-[12px] ring-1 transition-all ${
+                              selected
+                                ? 'bg-[#F0FDF4] text-[#16A34A] ring-[#22C55E]/25 font-semibold'
+                                : 'bg-[#F8FAFC] text-[#374151] ring-black/[0.04] font-medium'
+                            }`}>
                               <div className="flex items-center justify-between gap-2">
                                 <span className="truncate">{label}</span>
-                                <span className="shrink-0 tabular-nums text-[11px] text-[#667085]">{percentage}%</span>
+                                <span className={`shrink-0 tabular-nums text-[11px] font-bold ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                               </div>
-                              <div className="mt-0.5 h-1 rounded-full bg-[#EAECF0]">
-                                <div className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-[#18C964]' : 'bg-[#5B4BFF]/40'}`} style={{ width: `${percentage}%` }} />
+                              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#3B82F6]/70'}`}
+                                  style={{ width: `${percentage}%` }}
+                                />
                               </div>
                             </div>
                           )
@@ -402,7 +436,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="flex h-9 w-full items-center rounded-[10px] bg-white px-3 text-left text-[12px] font-medium text-[#374151] ring-1 ring-[#EAECF0] transition-all hover:bg-[#F5F3FF] hover:text-[#5B4BFF] hover:ring-[#5B4BFF]/20 active:scale-[0.99]">
+                      className="flex h-9 w-full items-center rounded-[10px] bg-[#F8FAFC] px-3 text-left text-[12px] font-[500] text-[#374151] ring-1 ring-black/[0.04] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 active:scale-[0.99]">
                       {label}
                     </button>
                   )
@@ -444,20 +478,27 @@ function ComoFuncionaCard() {
 
 function FriendsCtaCard() {
   return (
-    <section className="relative overflow-hidden rounded-[28px] p-6 shadow-[0_4px_20px_rgba(4,17,34,0.20)]" style={{ background: 'linear-gradient(135deg, #041122, #081E39)' }}>
-      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/[0.03]" />
-      <div className="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-[#18C964]/[0.05]" />
-      <div className="mb-3 flex items-center gap-2.5">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-white/[0.08]">
-          <Users className="h-4.5 w-4.5 text-[#18C964]" />
+    <section
+      className="relative overflow-hidden rounded-[24px] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+      style={{ background: 'linear-gradient(145deg, #0A1628 0%, #0F2044 60%, #0D2E1A 100%)' }}
+    >
+      <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.10) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute -left-8 bottom-0 h-28 w-28 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 70%)' }} />
+      <div className="mb-4 flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-white/[0.08] ring-1 ring-white/[0.08]">
+          <Users className="h-5 w-5 text-[#22C55E]" />
         </span>
         <div>
-          <h3 className="text-[15px] font-bold leading-none text-white">Atividade dos Amigos</h3>
-          <p className="mt-0.5 text-[11px] text-white/40">Veja quem votou</p>
+          <h3 className="text-[15px] font-[700] leading-none text-white">Atividade dos Amigos</h3>
+          <p className="mt-0.5 text-[11px] text-white/40">Comparar opiniões</p>
         </div>
       </div>
-      <p className="mb-5 text-[12px] leading-relaxed text-white/50">Descubra com quem você concorda e compare opiniões em tempo real.</p>
-      <Link href="/amigos" className="flex h-[52px] items-center justify-center rounded-[16px] bg-[#18C964] text-[13px] font-bold text-white transition hover:bg-[#15b358] active:scale-[0.98]">
+      <p className="mb-5 text-[13px] leading-relaxed text-white/50">Descubra com quem você concorda e compare opiniões em tempo real.</p>
+      <Link
+        href="/amigos"
+        className="flex h-[52px] items-center justify-center rounded-[16px] text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(34,197,94,0.35)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(34,197,94,0.45)] hover:-translate-y-[1px] active:scale-[0.98]"
+        style={{ background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)' }}
+      >
         Ver atividade
       </Link>
     </section>
@@ -466,17 +507,23 @@ function FriendsCtaCard() {
 
 function PremiumCtaCard() {
   return (
-    <section className="relative overflow-hidden rounded-[28px] p-6 shadow-[0_4px_20px_rgba(91,75,255,0.22)]" style={{ background: 'linear-gradient(135deg, #7B61FF, #5B4BFF)' }}>
-      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/[0.06]" />
-      <div className="pointer-events-none absolute left-0 bottom-0 h-20 w-20 rounded-full bg-white/[0.03]" />
+    <section
+      className="relative overflow-hidden rounded-[24px] p-6 shadow-[0_8px_24px_rgba(37,99,235,0.25)]"
+      style={{ background: 'linear-gradient(145deg, #1E3A8A 0%, #1D4ED8 50%, #2563EB 100%)' }}
+    >
+      <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute left-0 bottom-0 h-24 w-24 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%)' }} />
       <div className="relative">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/[0.12] px-2.5 py-1">
-          <Crown className="h-3 w-3 text-white" />
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/[0.20] bg-white/[0.12] px-3 py-1">
+          <Crown className="h-3 w-3 text-yellow-300" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-white">Premium</span>
         </div>
-        <h3 className="mt-2 text-[15px] font-bold leading-snug text-white">Compatibilidade de opiniões</h3>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
-        <Link href="/premium" className="mt-5 flex h-[52px] items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#5B4BFF] transition hover:bg-white/95 active:scale-[0.98]">
+        <h3 className="text-[16px] font-[700] leading-snug text-white">Compatibilidade de opiniões</h3>
+        <p className="mt-2 text-[13px] leading-relaxed text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
+        <Link
+          href="/premium"
+          className="mt-5 flex h-[52px] items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#1D4ED8] shadow-[0_4px_14px_rgba(0,0,0,0.15)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(0,0,0,0.20)] hover:-translate-y-[1px] active:scale-[0.98]"
+        >
           Comparar agora
         </Link>
       </div>

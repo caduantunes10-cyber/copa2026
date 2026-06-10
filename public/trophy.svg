@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 180" fill="none">
+  <ellipse cx="60" cy="72" rx="38" ry="42" fill="url(#goldBody)" />
+  <path d="M22 50 Q4 50 4 70 Q4 90 22 88" stroke="url(#goldHandle)" strokeWidth="7" fill="none" strokeLinecap="round"/>
+  <path d="M98 50 Q116 50 116 70 Q116 90 98 88" stroke="url(#goldHandle)" strokeWidth="7" fill="none" strokeLinecap="round"/>
+  <rect x="48" y="114" width="24" height="20" rx="4" fill="url(#goldNeck)" />
+  <rect x="32" y="134" width="56" height="10" rx="5" fill="url(#goldBase)" />
+  <rect x="24" y="144" width="72" height="14" rx="6" fill="url(#goldBaseDark)" />
+  <ellipse cx="46" cy="52" rx="10" ry="16" fill="white" fill-opacity="0.18" transform="rotate(-15 46 52)" />
+  <circle cx="60" cy="32" r="14" fill="url(#goldGlobe)" />
+  <ellipse cx="60" cy="32" rx="14" ry="6" fill="none" stroke="url(#goldRing)" strokeWidth="1.2" />
+  <line x1="60" y1="18" x2="60" y2="46" stroke="url(#goldRing)" strokeWidth="1.2" />
+  <ellipse cx="55" cy="27" rx="5" ry="7" fill="white" fill-opacity="0.20" transform="rotate(-15 55 27)" />
+  <defs>
+    <linearGradient id="goldBody" x1="22" y1="30" x2="98" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFE066"/>
+      <stop offset="40%" stop-color="#F5C518"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldHandle" x1="0" y1="50" x2="0" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldNeck" x1="48" y1="114" x2="72" y2="134" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5C518"/>
+      <stop offset="100%" stop-color="#9A7000"/>
+    </linearGradient>
+    <linearGradient id="goldBase" x1="32" y1="134" x2="88" y2="144" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFE066"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldBaseDark" x1="24" y1="144" x2="96" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D4A017"/>
+      <stop offset="100%" stop-color="#7A5800"/>
+    </linearGradient>
+    <linearGradient id="goldGlobe" x1="46" y1="18" x2="74" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFE066"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldRing" x1="46" y1="18" x2="74" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#9A7000"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -25,9 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} min-h-screen bg-[#F7F8FC] text-[#0F172A] antialiased`}>
+      <body className={`${inter.className} min-h-screen text-[#0F172A] antialiased`} style={{ background: 'linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%)' }}>
         <Header />
-        <main className="mx-auto w-full max-w-[1240px] px-4 pb-28 pt-4 sm:px-5 lg:px-6">
+        <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8">
           {children}
         </main>
         <BottomNav />
