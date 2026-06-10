@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Bell, Search, Shield, Trophy, Users } from 'lucide-react'
+import { Shield, Trophy, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
 
@@ -30,26 +30,26 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F5F6F8]/92 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-4 sm:px-5 lg:px-6">
-        <Link href="/" className="flex items-center gap-3 no-underline">
-          <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-[#16C45B] bg-white text-[#16C45B] shadow-sm">
-            <Shield className="h-5 w-5" strokeWidth={2.9} />
+    <header className="sticky top-0 z-40 border-b border-black/[0.04] bg-[#F5F6F8]/95 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-4 py-2.5 sm:px-5 lg:px-6">
+        <Link href="/" className="flex items-center gap-2.5 no-underline">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-[#16C45B] bg-white text-[#16C45B]">
+            <Shield className="h-4 w-4" strokeWidth={2.5} />
           </span>
           <div>
-            <div className="text-[1.45rem] font-black leading-none tracking-[-0.05em] text-[#111827]">
+            <div className="text-[1.05rem] font-black leading-none tracking-[-0.04em] text-[#111827]">
               PULSO
             </div>
-            <div className="text-[0.72rem] font-black uppercase leading-none tracking-[0.12em] text-[#6C3BFF]">
+            <div className="text-[0.6rem] font-bold uppercase leading-none tracking-[0.14em] text-[#6C3BFF]">
               COPA
             </div>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-8 text-xs font-black uppercase tracking-wide text-[#111827] lg:flex">
-          <Link href="/" className="border-b-2 border-[#6C3BFF] pb-2 text-[#6C3BFF]">Painel</Link>
-          <Link href="/amigos" className="pb-2">Amigos</Link>
-          <Link href="/premium" className="pb-2">Premium</Link>
+        <nav className="hidden items-center gap-6 lg:flex">
+          <Link href="/" className="text-[12px] font-semibold text-[#6C3BFF]">Painel</Link>
+          <Link href="/amigos" className="text-[12px] font-semibold text-[#6B7280] transition hover:text-[#111827]">Amigos</Link>
+          <Link href="/premium" className="text-[12px] font-semibold text-[#6B7280] transition hover:text-[#111827]">Premium</Link>
         </nav>
 
         <nav className="ml-3 hidden flex-1 justify-center gap-2 sm:flex lg:hidden">
@@ -64,30 +64,23 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <button className="hidden rounded-full p-2 text-[#111827] sm:grid">
-            <Search className="h-5 w-5" />
-          </button>
-          <button className="relative hidden rounded-full p-2 text-[#111827] sm:grid">
-            <Bell className="h-5 w-5" />
-            <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-[#6C3BFF] text-[9px] font-black text-white">3</span>
-          </button>
+        <div className="flex items-center gap-1.5">
           {!profile ? (
             <button onClick={handleLogin}
-              className="rounded-full bg-[#6C3BFF] px-5 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)]">
+              className="rounded-full bg-[#6C3BFF] px-4 py-2 text-[11px] font-semibold text-white shadow-[0_6px_16px_rgba(108,59,255,0.20)]">
               Entrar
             </button>
           ) : (
-            <Link href="/amigos" className="flex items-center gap-3">
+            <Link href="/amigos" className="flex items-center gap-2">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.full_name || ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-white" />
+                <img src={profile.avatar_url} alt={profile.full_name || ''} className="h-8 w-8 rounded-full object-cover ring-1 ring-black/10" />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8FFF0] text-sm font-black text-[#16C45B] ring-2 ring-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8FFF0] text-[12px] font-black text-[#16C45B] ring-1 ring-black/10">
                   {profile.full_name?.[0] || 'U'}
                 </div>
               )}
               <div className="hidden leading-tight lg:block">
-                <div className="text-xs font-black text-[#111827]">{profile.full_name || profile.username}</div>
+                <div className="text-[12px] font-semibold text-[#111827]">{profile.full_name || profile.username}</div>
               </div>
             </Link>
           )}
