@@ -2,13 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Compass, Plus, Radio, Trophy, Users } from 'lucide-react'
+import { Compass, Plus, Trophy, Users } from 'lucide-react'
 
 export function BottomNav() {
   const pathname = usePathname()
   const items = [
     { href: '/', label: 'Painel', icon: Trophy },
-    { href: '/ranking', label: 'Ao vivo', icon: Radio },
     { href: '/amigos', label: 'Amigos', icon: Users },
     { href: '/amigos', label: 'Explorar', icon: Compass },
   ]
