@@ -607,7 +607,67 @@ function PremiumCtaCard() {
   )
 }
 
+type CompatibilityEntry = {
+  friendId: string
+  username: string
+  score: number
+  totalCompared: number
+}
+
 function RankingCard() {
+  const [entries, setEntries] = useState<CompatibilityEntry[]>([])
+  const [status, setStatus] = useState<'loading' | 'no-friends' | 'no-shared' | 'done'>('loading')
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setStatus('no-friends'); return }
+
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('following_id')
+        .eq('follower_id', user.id)
+
+      if (!friendships || friendships.length === 0) { setStatus('no-friends'); return }
+
+      const friendIds = friendships.map((f: { following_id: string }) => f.following_id)
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', friendIds)
+
+      if (!profiles || profiles.length === 0) { setStatus('no-friends'); return }
+
+      const results = await Promise.all(
+        profiles.map(async (p: { id: string; username: string }) => {
+          const { data } = await supabase.rpc('get_friend_comparison', {
+            current_user_id: user.id,
+            friend_user_id: p.id,
+          })
+          const rows = data || []
+          const matches = rows.filter((r: { comparison_type: string }) => r.comparison_type === 'match').length
+          const total = rows.length
+          const score = total > 0 ? Math.round((matches / total) * 100) : 0
+          return { friendId: p.id, username: p.username, score, totalCompared: total } as CompatibilityEntry
+        })
+      )
+
+      const withShared = results.filter(r => r.totalCompared > 0)
+      if (withShared.length === 0) { setStatus('no-shared'); return }
+
+      const top3 = withShared.sort((a, b) => b.score - a.score).slice(0, 3)
+      setEntries(top3)
+      setStatus('done')
+    }
+
+    load()
+  }, [])
+
+  const medals = ['🥇', '🥈', '🥉']
+
   return (
     <section
       className="rounded-[20px] p-6"
@@ -619,7 +679,31 @@ function RankingCard() {
         </div>
         <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Ranking de Compatibilidade</h3>
       </div>
-      <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Ranking disponível quando houver dados suficientes.</p>
+
+      {status === 'loading' && (
+        <p className="text-[13px] font-[400] text-[#64748B]">Calculando ranking...</p>
+      )}
+      {status === 'no-friends' && (
+        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Adicione amigos para ver seu ranking.</p>
+      )}
+      {status === 'no-shared' && (
+        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Vote nas mesmas enquetes que seus amigos para gerar o ranking.</p>
+      )}
+      {status === 'done' && (
+        <ul className="space-y-2">
+          {entries.map((entry, idx) => (
+            <li key={entry.friendId} className="grid w-full min-w-0 grid-cols-[20px_minmax(0,1fr)_48px] items-center gap-2">
+              <span className="text-[14px] leading-none">{medals[idx]}</span>
+              <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-[500] text-[#0F172A]">
+                {entry.username}
+              </span>
+              <span className="w-12 shrink-0 text-right text-[13px] font-[700] tabular-nums text-[#16A34A]">
+                {entry.score}%
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
