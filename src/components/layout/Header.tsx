@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Shield, Trophy, Users } from 'lucide-react'
+import { Crown, Home, Shield, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
 
@@ -48,27 +48,27 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 lg:flex">
           {[
-            { label: 'Painel', icon: '🏠', href: '/' },
-            { label: 'Amigos', icon: '👥', href: '/amigos' },
-            { label: 'Premium', icon: '⭐', href: '/premium' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className={`flex items-center gap-2 rounded-[12px] px-4 py-2 text-[14px] font-semibold transition-all ${
-                item.href === '/' ? 'bg-[#5B4BFF]/[0.08] text-[#5B4BFF]' : 'text-[#667085] hover:bg-[#F7F8FC] hover:text-[#0F172A]'
+            { label: 'Painel', Icon: Home, href: '/' },
+            { label: 'Amigos', Icon: Users, href: '/amigos' },
+            { label: 'Premium', Icon: Crown, href: '/premium' },
+          ].map(({ label, Icon, href }) => (
+            <Link key={href} href={href}
+              className={`flex items-center gap-2 rounded-[12px] px-4 py-2 text-[14px] font-semibold transition-all duration-200 ${
+                href === '/' ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#64748B] hover:bg-[#F7F8FC] hover:text-[#0F172A]'
               }`}>
-              <span className="text-[14px] leading-none">{item.icon}</span>
-              {item.label}
+              <Icon className="h-[18px] w-[18px]" strokeWidth={2.2} />
+              {label}
             </Link>
           ))}
         </nav>
 
         <nav className="ml-3 hidden flex-1 justify-center gap-1.5 sm:flex lg:hidden">
           {[
-            ['Painel', Trophy, '/'],
-            ['Amigos', Users, '/amigos'],
-          ].map(([label, Icon, href]: any) => (
-            <Link key={label} href={href} className={`flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[10px] font-bold ${href === '/' ? 'bg-[#5B4BFF]/10 text-[#5B4BFF] shadow-sm' : 'text-[#667085]'}`}>
-              <Icon className="h-4 w-4" />
+            { label: 'Painel', Icon: Home, href: '/' },
+            { label: 'Amigos', Icon: Users, href: '/amigos' },
+          ].map(({ label, Icon, href }) => (
+            <Link key={label} href={href} className={`flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[10px] font-bold transition-colors duration-200 ${href === '/' ? 'bg-[#EEF2FF] text-[#4F46E5] shadow-sm' : 'text-[#64748B]'}`}>
+              <Icon className="h-4 w-4" strokeWidth={2.2} />
               {label}
             </Link>
           ))}

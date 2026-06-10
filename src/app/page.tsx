@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Crown, Users } from 'lucide-react'
+import { Activity, Crown, TrendingUp, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 
@@ -22,30 +22,33 @@ const HOME_POLLS_LIMIT = 25
 function HeroSection() {
   return (
     <div
-      className="relative flex min-h-[180px] items-center overflow-hidden rounded-[24px] px-7 shadow-[0_8px_32px_rgba(34,197,94,0.15),0_2px_8px_rgba(0,0,0,0.06)] sm:min-h-[200px] sm:rounded-[28px] sm:px-10 lg:min-h-[220px]"
-      style={{ background: 'linear-gradient(135deg, #064E3B 0%, #065F46 40%, #1E3A8A 100%)' }}
+      className="relative flex items-center overflow-hidden rounded-[28px] px-8 shadow-[0_25px_60px_rgba(15,23,42,0.18)] sm:px-12 lg:px-[48px]"
+      style={{ height: '280px' }}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ background: 'radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 70%)' }} />
-      <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%)' }} />
-      <div className="pointer-events-none absolute right-40 bottom-0 h-32 w-32 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%)' }} />
-      <div className="relative flex-1 py-8">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/[0.15] bg-white/[0.10] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
+      {/* Stadium background image */}
+      <img
+        src="/stadium.jpg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+      />
+      {/* Dark overlay */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(90deg, rgba(0,40,25,.92) 0%, rgba(0,40,25,.75) 30%, rgba(0,0,0,.45) 100%)' }}
+      />
+      {/* Content */}
+      <div className="relative max-w-[520px]">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.15] bg-white/[0.10] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22C55E]" />
           Copa do Mundo 2026
         </div>
-        <h1 className="mt-3 text-[26px] font-[800] leading-[1.15] tracking-[-0.03em] text-white drop-shadow-sm sm:text-[32px] lg:text-[36px]">
-          Descubra quem pensa<br className="hidden sm:block" /> como você.
+        <h1 className="text-[32px] font-[800] leading-[1.08] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]">
+          Descubra quem pensa<br /> como você.
         </h1>
-        <p className="mt-2.5 max-w-md text-[13px] leading-relaxed text-white/60 sm:text-[15px]">
+        <p className="mt-4 text-[15px] leading-[1.6] text-white/[0.86] sm:text-[18px]">
           Vote nas discussões da Copa e compare opiniões com seus amigos.
         </p>
-      </div>
-      <div className="pointer-events-none absolute bottom-0 right-6 hidden select-none sm:block" aria-hidden="true">
-        <div className="relative">
-          <div className="pointer-events-none absolute -left-10 top-0 h-20 w-20 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.20) 0%, transparent 70%)' }} />
-          <div className="pointer-events-none absolute -right-4 bottom-8 h-12 w-12 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)' }} />
-          <span className="relative block text-[130px] leading-none lg:text-[150px]" style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25))' }}>🏆</span>
-        </div>
       </div>
     </div>
   )
@@ -258,28 +261,38 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
       </div>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-8">
         <div className="hidden shrink-0 lg:flex lg:flex-col lg:justify-center">
-          <div
-            className="flex h-[220px] w-[240px] items-center justify-center rounded-[20px] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_16px_rgba(34,197,94,0.12)]"
-            style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #EFF6FF 100%)' }}
-            aria-hidden="true"
-          >
-            <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="55" cy="55" r="42" fill="#22C55E" fillOpacity="0.08" />
-              <circle cx="55" cy="55" r="30" fill="#22C55E" fillOpacity="0.12" />
-              <circle cx="55" cy="55" r="42" stroke="#22C55E" strokeOpacity="0.18" strokeWidth="1.5" fill="none" />
-              <circle cx="55" cy="55" r="20" fill="white" stroke="#22C55E" strokeWidth="1.8" />
-              <path d="M55 27L60 39L55 44L50 39L55 27Z" fill="#22C55E" fillOpacity="0.6"/>
-              <path d="M83 55L71 50L69 55L71 60L83 55Z" fill="#22C55E" fillOpacity="0.6"/>
-              <path d="M27 55L39 60L41 55L39 50L27 55Z" fill="#22C55E" fillOpacity="0.6"/>
-              <path d="M63 76L59 65L55 66L51 65L47 76L55 80L63 76Z" fill="#22C55E" fillOpacity="0.6"/>
-              <path d="M41 34L46 46L50 44L50 39L41 34Z" fill="#2563EB" fillOpacity="0.25"/>
-              <path d="M69 34L60 39L60 44L64 46L69 34Z" fill="#2563EB" fillOpacity="0.25"/>
-              <path d="M71 60L65 63L63 68L68 73L71 60Z" fill="#2563EB" fillOpacity="0.25"/>
-              <path d="M39 60L42 73L47 68L45 63L39 60Z" fill="#2563EB" fillOpacity="0.25"/>
-              <circle cx="55" cy="55" r="7" fill="#22C55E" fillOpacity="0.5"/>
-              <circle cx="55" cy="55" r="3" fill="#22C55E"/>
-            </svg>
-          </div>
+          {(() => {
+            const topPct = totalVotes > 0
+              ? Math.max(...poll.options.map((_, i) => Math.round(((results[i] || 0) / totalVotes) * 100)))
+              : 0
+            return (
+              <div
+                className="flex h-[220px] w-[240px] flex-col items-center justify-center gap-3 rounded-[20px]"
+                style={{
+                  background: 'linear-gradient(135deg, #ECFDF5 0%, #EFF6FF 100%)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 16px rgba(34,197,94,0.12)',
+                }}
+              >
+                <div
+                  className="flex h-[52px] w-[52px] items-center justify-center rounded-full"
+                  style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}
+                >
+                  <TrendingUp className="h-7 w-7 text-[#22C55E]" strokeWidth={2} />
+                </div>
+                <div
+                  className="text-[48px] font-[800] leading-none tabular-nums text-[#16A34A]"
+                >
+                  {totalVotes > 0 ? `${topPct}%` : '—'}
+                </div>
+                <p className="max-w-[160px] text-center text-[14px] font-[600] leading-snug text-[#0F172A]">
+                  Concordam com esta opção
+                </p>
+                <p className="text-[13px] text-[#64748B]">
+                  {totalVotes > 0 ? `${totalVotes.toLocaleString('pt-BR')} votos totais` : 'Sem votos ainda'}
+                </p>
+              </div>
+            )
+          })()}
         </div>
         <div className="flex flex-1 min-w-0 flex-col justify-center">
           <p className="mb-6 text-[22px] font-[700] leading-[1.2] text-[#0F172A] sm:text-[26px] lg:text-[28px]">{poll.question}</p>
@@ -379,7 +392,9 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
         {polls.map((poll) => (
           <div key={poll.id} className="group/card rounded-[20px] bg-white p-4 ring-1 ring-black/[0.05] shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-3 transition-all duration-250 hover:shadow-[0_8px_24px_rgba(0,0,0,0.09)] hover:-translate-y-[3px]">
             <div className="flex items-start gap-3">
-              <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] text-[18px] leading-none select-none shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">⚽</div>
+              <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">
+                <Activity className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2.2} />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-[14px] font-[700] leading-[1.4] text-[#0F172A]">{poll.question}</p>
