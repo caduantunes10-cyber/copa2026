@@ -30,7 +30,7 @@ function HeroSection() {
           <span className="h-1 w-1 rounded-full bg-[#5B4BFF]" />
           Copa do Mundo 2026
         </div>
-        <h1 className="text-[20px] font-bold leading-[30px] tracking-[-0.02em] text-[#0F172A] sm:text-[22px] lg:text-[24px]">
+        <h1 className="text-[20px] font-[800] leading-[30px] tracking-[-0.02em] text-[#0F172A] sm:text-[22px] lg:text-[24px]">
           Descubra quem pensa como você.
         </h1>
         <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-[#667085] sm:text-[15px]">
@@ -216,14 +216,12 @@ export default function HomePage() {
           <div className="grid gap-4 lg:hidden">
             <FriendsCtaCard />
             <PremiumCtaCard />
-            <ComoFuncionaCard />
           </div>
         </main>
 
         <aside className="hidden space-y-4 lg:block">
           <FriendsCtaCard />
           <PremiumCtaCard />
-          <ComoFuncionaCard />
         </aside>
 
       </div>
@@ -242,17 +240,32 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   const totalVotes = Object.values(results).reduce((sum, c) => sum + c, 0)
   const voted = votedPolls.has(poll.id)
   return (
-    <section className="overflow-hidden rounded-[20px] bg-[#F6FFF8] p-5 ring-1 ring-[#D9F4E5] shadow-[0_6px_24px_rgba(15,23,42,0.05)] sm:rounded-[28px] sm:p-6 lg:min-h-[340px]">
+    <section className="overflow-hidden rounded-[28px] bg-[#F4FFF7] p-5 ring-1 ring-[#D6F5E3] shadow-[0_12px_40px_rgba(24,201,100,0.08)] sm:p-8 lg:min-h-[420px]">
       <div className="mb-4 flex items-center gap-2">
         <span className="inline-flex h-[28px] items-center rounded-full bg-[#ECFDF3] px-3 text-[13px] font-bold text-[#16A34A] ring-1 ring-[#D9F4E5]">🔥 ENQUETE EM DESTAQUE</span>
         {voted && <span className="inline-flex h-6 items-center rounded-full bg-[#ECFDF3] px-[10px] text-[11px] font-semibold text-[#16A34A]">✓ Votado</span>}
       </div>
       <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
         <div className="hidden shrink-0 lg:flex">
-          <div className="flex h-[160px] w-[260px] items-center justify-center rounded-[18px] text-[72px] leading-none select-none" style={{ background: 'linear-gradient(135deg, #EEF7FF, #F3FFF6)' }} aria-hidden="true">⚽</div>
+          <div className="flex h-[180px] w-[280px] items-center justify-center rounded-[20px]" style={{ background: 'linear-gradient(135deg, #EEF7FF, #F3FFF6)' }} aria-hidden="true">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="48" cy="48" r="36" fill="#18C964" fillOpacity="0.12" />
+              <circle cx="48" cy="48" r="26" fill="#18C964" fillOpacity="0.18" />
+              <path d="M48 24C34.745 24 24 34.745 24 48C24 61.255 34.745 72 48 72C61.255 72 72 61.255 72 48C72 34.745 61.255 24 48 24Z" fill="white" stroke="#18C964" strokeWidth="2"/>
+              <path d="M48 24L52 34L48 38L44 34L48 24Z" fill="#18C964" fillOpacity="0.5"/>
+              <path d="M72 48L62 44L60 48L62 52L72 48Z" fill="#18C964" fillOpacity="0.5"/>
+              <path d="M24 48L34 52L36 48L34 44L24 48Z" fill="#18C964" fillOpacity="0.5"/>
+              <path d="M55.5 65L52 56L48 57L44 56L40.5 65L48 68L55.5 65Z" fill="#18C964" fillOpacity="0.5"/>
+              <path d="M36.5 31L40 40L44 38L44 34L36.5 31Z" fill="#5B4BFF" fillOpacity="0.3"/>
+              <path d="M59.5 31L52 34L52 38L56 40L59.5 31Z" fill="#5B4BFF" fillOpacity="0.3"/>
+              <path d="M62 52L56 54L55.5 58L60 62L62 52Z" fill="#5B4BFF" fillOpacity="0.3"/>
+              <path d="M34 44L36 54L40.5 58L36 62L34 44Z" fill="#5B4BFF" fillOpacity="0.3"/>
+              <circle cx="48" cy="48" r="6" fill="#18C964" fillOpacity="0.6"/>
+            </svg>
+          </div>
         </div>
         <div className="flex flex-1 min-w-0 flex-col justify-center">
-          <p className="mb-4 text-[22px] font-extrabold leading-[1.2] text-[#0F172A] sm:text-[26px] lg:text-[30px]">{poll.question}</p>
+          <p className="mb-4 text-[28px] font-[800] leading-[1.15] text-[#0F172A] sm:text-[32px] lg:text-[36px]">{poll.question}</p>
           <div className="space-y-2">
             {voted ? (
               poll.options.map((option, optionIndex) => {
@@ -427,7 +440,7 @@ function ComoFuncionaCard() {
 
 function FriendsCtaCard() {
   return (
-    <section className="relative overflow-hidden rounded-[24px] p-5 shadow-[0_4px_20px_rgba(4,17,34,0.20)]" style={{ background: 'linear-gradient(135deg, #041122, #081E39)' }}>
+    <section className="relative overflow-hidden rounded-[28px] p-5 shadow-[0_4px_20px_rgba(4,17,34,0.20)]" style={{ background: 'linear-gradient(135deg, #041122, #081E39)' }}>
       <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/[0.03]" />
       <div className="pointer-events-none absolute -left-8 bottom-0 h-20 w-20 rounded-full bg-[#18C964]/[0.05]" />
       <div className="mb-3 flex items-center gap-2.5">
@@ -437,7 +450,7 @@ function FriendsCtaCard() {
         <h3 className="text-[14px] font-bold text-white">Amigos</h3>
       </div>
       <p className="mb-5 text-[12px] leading-relaxed text-white/50">Veja o que seus amigos votaram e descubra com quem você pensa igual.</p>
-      <Link href="/amigos" className="flex h-12 items-center justify-center rounded-[16px] bg-[#18C964] text-[13px] font-bold text-white transition hover:bg-[#15b358] active:scale-[0.98]">
+      <Link href="/amigos" className="flex h-[52px] items-center justify-center rounded-[16px] bg-[#18C964] text-[13px] font-bold text-white transition hover:bg-[#15b358] active:scale-[0.98]">
         Ver atividade
       </Link>
     </section>
@@ -446,7 +459,7 @@ function FriendsCtaCard() {
 
 function PremiumCtaCard() {
   return (
-    <section className="relative overflow-hidden rounded-[24px] p-5 shadow-[0_4px_20px_rgba(91,75,255,0.22)]" style={{ background: 'linear-gradient(135deg, #7B61FF, #5B4BFF)' }}>
+    <section className="relative overflow-hidden rounded-[28px] p-5 shadow-[0_4px_20px_rgba(91,75,255,0.22)]" style={{ background: 'linear-gradient(135deg, #7B61FF, #5B4BFF)' }}>
       <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/[0.06]" />
       <div className="relative">
         <div className="mb-2 flex items-center gap-1.5">
@@ -455,7 +468,7 @@ function PremiumCtaCard() {
         </div>
         <h3 className="text-[14px] font-bold leading-snug text-white">Compatibilidade de opiniões</h3>
         <p className="mt-1.5 text-[12px] leading-relaxed text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
-        <Link href="/premium" className="mt-4 flex h-12 items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#5B4BFF] transition hover:bg-white/95 active:scale-[0.98]">
+        <Link href="/premium" className="mt-4 flex h-[52px] items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#5B4BFF] transition hover:bg-white/95 active:scale-[0.98]">
           Comparar agora
         </Link>
       </div>
