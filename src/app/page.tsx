@@ -37,32 +37,26 @@ function Avatar({ label, green = false }: { label: string, green?: boolean }) {
 
 function HeroSection() {
   return (
-    <div className="relative overflow-hidden rounded-[28px] bg-white px-6 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03] sm:px-7 sm:py-6">
-      <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-[#6C3BFF] to-[#16C45B] rounded-t-[28px]" />
-      <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[#6C3BFF]/[0.03]" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="mb-1.5 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[#6C3BFF]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#6C3BFF]" />
-            Copa do Mundo 2026
-          </div>
-          <h1 className="text-xl font-black leading-tight tracking-[-0.03em] text-[#111827] sm:text-2xl">
-            Descubra quem pensa como você.
-          </h1>
-          <p className="mt-1.5 max-w-sm text-[12px] font-medium leading-relaxed text-[#6B7280]">
-            Vote nas maiores discussões da Copa e compare opiniões com seus amigos.
-          </p>
+    <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-white via-white to-[#F3F0FF] px-6 py-5 shadow-[0_10px_30px_rgba(108,59,255,0.08)] ring-1 ring-[#6C3BFF]/[0.07] sm:px-7 sm:py-6">
+      {/* top gradient bar */}
+      <div className="pointer-events-none absolute left-0 top-0 h-1 w-full rounded-t-[28px] bg-gradient-to-r from-[#6C3BFF] to-[#16C45B]" />
+      {/* decorative orbs */}
+      <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br from-[#6C3BFF]/[0.07] to-[#16C45B]/[0.03]" />
+      <div className="pointer-events-none absolute -bottom-10 right-16 h-32 w-32 rounded-full bg-[#16C45B]/[0.05]" />
+      <div className="pointer-events-none absolute bottom-4 right-6 h-14 w-14 rounded-2xl bg-[#6C3BFF]/[0.06] rotate-12" />
+      <div className="pointer-events-none absolute top-6 right-32 h-8 w-8 rounded-full bg-[#6C3BFF]/[0.08]" />
+      {/* content */}
+      <div className="relative">
+        <div className="mb-1.5 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[#6C3BFF]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#6C3BFF]" />
+          Copa do Mundo 2026
         </div>
-        <div className="flex shrink-0 gap-2 sm:flex-col">
-          <div className="rounded-2xl bg-gradient-to-br from-[#1a1033] to-[#2d1f5e] px-4 py-2.5 text-center ring-1 ring-white/10">
-            <div className="text-[18px] font-black leading-none text-white">25+</div>
-            <div className="mt-0.5 text-[9px] font-black uppercase tracking-wide text-white/40">Enquetes</div>
-          </div>
-          <div className="rounded-2xl bg-gradient-to-br from-[#1a1033] to-[#2d1f5e] px-4 py-2.5 text-center ring-1 ring-white/10">
-            <div className="text-[18px] font-black leading-none text-[#16C45B]">∞</div>
-            <div className="mt-0.5 text-[9px] font-black uppercase tracking-wide text-white/40">Amigos</div>
-          </div>
-        </div>
+        <h1 className="text-xl font-black leading-tight tracking-[-0.03em] text-[#111827] sm:text-2xl">
+          Descubra quem pensa como você.
+        </h1>
+        <p className="mt-1.5 max-w-sm text-[12px] font-medium leading-relaxed text-[#6B7280]">
+          Vote nas maiores discussões da Copa e compare opiniões com seus amigos.
+        </p>
       </div>
     </div>
   )
