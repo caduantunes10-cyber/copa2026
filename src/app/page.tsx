@@ -43,10 +43,10 @@ function HeroSection() {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22C55E]" />
           Copa do Mundo 2026
         </div>
-        <h1 className="text-[32px] font-[800] leading-[1.08] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]">
+        <h1 className="text-[38px] font-[700] leading-[1.05] tracking-[-0.05em] text-white sm:text-[46px] lg:text-[52px]">
           Descubra quem pensa<br /> como você.
         </h1>
-        <p className="mt-4 text-[15px] leading-[1.6] text-white/[0.86] sm:text-[18px]">
+        <p className="mt-4 text-[15px] font-[400] leading-[1.6] text-white/[0.86]">
           Vote nas discussões da Copa e compare opiniões com seus amigos.
         </p>
       </div>
@@ -286,14 +286,14 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                   <TrendingUp className="h-7 w-7 text-[#22C55E]" strokeWidth={2} />
                 </div>
                 <div
-                  className="text-[48px] font-[800] leading-none tabular-nums text-[#16A34A]"
+                  className="text-[40px] font-[700] leading-[1.1] tracking-[-0.04em] tabular-nums text-[#16A34A]"
                 >
                   {totalVotes > 0 ? `${topPct}%` : '—'}
                 </div>
-                <p className="max-w-[160px] text-center text-[14px] font-[600] leading-snug text-[#0F172A]">
+                <p className="max-w-[160px] text-center text-[14px] font-[500] leading-snug text-[#0F172A]">
                   Concordam com esta opção
                 </p>
-                <p className="text-[13px] text-[#64748B]">
+                <p className="text-[13px] font-[400] text-[#64748B]">
                   {totalVotes > 0 ? `${totalVotes.toLocaleString('pt-BR')} votos totais` : 'Sem votos ainda'}
                 </p>
               </div>
@@ -301,7 +301,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
           })()}
         </div>
         <div className="flex flex-1 min-w-0 flex-col justify-center">
-          <p className="mb-6 text-[22px] font-[700] leading-[1.2] text-[#0F172A] sm:text-[26px] lg:text-[28px]">{poll.question}</p>
+          <p className="mb-6 text-[22px] font-[700] leading-[1.15] tracking-[-0.03em] text-[#0F172A] sm:text-[26px] lg:text-[28px]">{poll.question}</p>
           <div className="space-y-3">
             {voted ? (
               poll.options.map((option, optionIndex) => {
@@ -316,8 +316,8 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                       : 'bg-[#F8FAFC] ring-black/[0.05]'
                   }`}>
                     <div className="flex items-center justify-between gap-3 text-[13px] font-semibold">
-                      <span className={`truncate ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
-                      <span className={`shrink-0 tabular-nums text-[13px] font-bold ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
+                      <span className={`truncate text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
+                      <span className={`shrink-0 tabular-nums text-[13px] font-[400] ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                     </div>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
                       <div
@@ -335,7 +335,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                   <button
                     key={`feat-${poll.id}-${optionIndex}`}
                     onClick={() => onVote(poll, optionIndex)}
-                    className="flex h-12 w-full items-center rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[14px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
+                    className="flex h-12 w-full items-center rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[15px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
                     {label}
                   </button>
                 )
@@ -343,7 +343,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
             )}
           </div>
           {voted && totalVotes > 0 && (
-            <p className="mt-3 text-[12px] font-medium text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
+            <p className="mt-3 text-[13px] font-[400] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
           )}
         </div>
       </div>
@@ -504,11 +504,11 @@ function FriendsCtaCard() {
           <Users className="h-5 w-5 text-[#22C55E]" />
         </span>
         <div>
-          <h3 className="text-[15px] font-[700] leading-none text-white">Atividade dos Amigos</h3>
-          <p className="mt-0.5 text-[11px] text-white/40">Comparar opiniões</p>
+          <h3 className="text-[15px] font-[600] leading-none text-white">Atividade dos Amigos</h3>
+          <p className="mt-0.5 text-[13px] font-[400] text-white/40">Comparar opiniões</p>
         </div>
       </div>
-      <p className="mb-5 text-[13px] leading-relaxed text-white/50">Descubra com quem você concorda e compare opiniões em tempo real.</p>
+      <p className="mb-5 text-[15px] font-[400] leading-[1.6] text-white/50">Descubra com quem você concorda e compare opiniões em tempo real.</p>
       <Link
         href="/amigos"
         className="flex h-[52px] items-center justify-center rounded-[16px] text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(34,197,94,0.35)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(34,197,94,0.45)] hover:-translate-y-[1px] active:scale-[0.98]"
@@ -533,8 +533,8 @@ function PremiumCtaCard() {
           <Crown className="h-3 w-3 text-yellow-300" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-white">Premium</span>
         </div>
-        <h3 className="text-[16px] font-[700] leading-snug text-white">Compatibilidade de opiniões</h3>
-        <p className="mt-2 text-[13px] leading-relaxed text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
+        <h3 className="text-[16px] font-[600] leading-snug text-white">Compatibilidade de opiniões</h3>
+        <p className="mt-2 text-[15px] font-[400] leading-[1.6] text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
         <Link
           href="/premium"
           className="mt-5 flex h-[52px] items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#1D4ED8] shadow-[0_4px_14px_rgba(0,0,0,0.15)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(0,0,0,0.20)] hover:-translate-y-[1px] active:scale-[0.98]"
@@ -561,7 +561,7 @@ function RankingCard() {
         <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(34,197,94,0.10)' }}>
           <Users className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2} />
         </div>
-        <h3 className="text-[14px] font-[700] text-[#0F172A]">Ranking de Compatibilidade</h3>
+        <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Ranking de Compatibilidade</h3>
       </div>
       <div className="space-y-3">
         {entries.map((e) => (
@@ -572,9 +572,9 @@ function RankingCard() {
             >
               {e.name[0]}
             </div>
-            <span className="flex-1 text-[14px] font-[600] text-[#0F172A]">{e.name}</span>
+            <span className="flex-1 text-[14px] font-[500] text-[#0F172A]">{e.name}</span>
             <span
-              className="rounded-full px-[10px] py-[6px] text-[12px] font-[700] text-[#4F46E5]"
+              className="rounded-full px-[10px] py-[6px] text-[12px] font-[600] text-[#4F46E5]"
               style={{ background: '#EEF2FF' }}
             >
               {e.pct}%
@@ -598,9 +598,9 @@ function TermometroCard() {
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
         <TrendingUp className="h-[22px] w-[22px] text-white" strokeWidth={2} />
       </div>
-      <p className="mb-1 text-[12px] font-[600] uppercase tracking-widest text-white/70">Termômetro da Comunidade</p>
-      <div className="text-[48px] font-[800] leading-none text-white">73%</div>
-      <p className="mt-3 text-[14px] leading-[1.6] text-white/[0.85]">
+      <p className="mb-1 text-[12px] font-[500] uppercase tracking-widest text-white/70">Termômetro da Comunidade</p>
+      <div className="text-[40px] font-[700] leading-[1.1] tracking-[-0.04em] text-white">73%</div>
+      <p className="mt-3 text-[15px] font-[400] leading-[1.6] text-white/[0.85]">
         Acreditam que o Brasil chega à semifinal
       </p>
     </section>
@@ -622,13 +622,13 @@ function EstatisticasCard() {
         <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(37,99,235,0.08)' }}>
           <BarChart3 className="h-[18px] w-[18px] text-[#2563EB]" strokeWidth={2} />
         </div>
-        <h3 className="text-[14px] font-[700] text-[#0F172A]">Estatísticas da Copa</h3>
+        <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Estatísticas da Copa</h3>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {stats.map(s => (
           <div key={s.label} className="flex flex-col items-center rounded-[12px] py-3" style={{ background: '#F8FAFC' }}>
-            <span className="text-[24px] font-[800] leading-none text-[#0F172A]">{s.value}</span>
-            <span className="mt-1 text-center text-[12px] text-[#64748B]">{s.label}</span>
+            <span className="text-[24px] font-[700] leading-none tracking-[-0.04em] text-[#0F172A]">{s.value}</span>
+            <span className="mt-1 text-center text-[13px] font-[400] text-[#64748B]">{s.label}</span>
           </div>
         ))}
       </div>
