@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Activity, Crown, TrendingUp, Users } from 'lucide-react'
+import { Activity, BarChart3, Crown, TrendingUp, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 
@@ -222,12 +222,18 @@ export default function HomePage() {
           <div className="grid gap-4 lg:hidden">
             <FriendsCtaCard />
             <PremiumCtaCard />
+            <RankingCard />
+            <TermometroCard />
+            <EstatisticasCard />
           </div>
         </main>
 
-        <aside className="hidden space-y-4 lg:block lg:pt-0">
+        <aside className="hidden space-y-5 lg:block lg:pt-0">
           <FriendsCtaCard />
           <PremiumCtaCard />
+          <RankingCard />
+          <TermometroCard />
+          <EstatisticasCard />
         </aside>
 
       </div>
@@ -541,6 +547,96 @@ function PremiumCtaCard() {
         >
           Comparar agora
         </Link>
+      </div>
+    </section>
+  )
+}
+
+function RankingCard() {
+  const entries = [
+    { name: 'João', pct: 94 },
+    { name: 'Ana', pct: 89 },
+    { name: 'Pedro', pct: 86 },
+  ]
+  return (
+    <section
+      className="rounded-[20px] bg-white p-6"
+      style={{ border: '1px solid rgba(15,23,42,0.06)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}
+    >
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(34,197,94,0.10)' }}>
+          <Users className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2} />
+        </div>
+        <h3 className="text-[14px] font-[700] text-[#0F172A]">Ranking de Compatibilidade</h3>
+      </div>
+      <div className="space-y-3">
+        {entries.map((e) => (
+          <div key={e.name} className="flex items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-[800] text-white"
+              style={{ background: 'linear-gradient(135deg, #22C55E 0%, #2563EB 100%)' }}
+            >
+              {e.name[0]}
+            </div>
+            <span className="flex-1 text-[14px] font-[600] text-[#0F172A]">{e.name}</span>
+            <span
+              className="rounded-full px-[10px] py-[6px] text-[12px] font-[700] text-[#4F46E5]"
+              style={{ background: '#EEF2FF' }}
+            >
+              {e.pct}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function TermometroCard() {
+  return (
+    <section
+      className="rounded-[24px] p-7"
+      style={{
+        background: 'linear-gradient(135deg, #16A34A 0%, #2563EB 100%)',
+        boxShadow: '0 20px 50px rgba(37,99,235,0.22)',
+      }}
+    >
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
+        <TrendingUp className="h-[22px] w-[22px] text-white" strokeWidth={2} />
+      </div>
+      <p className="mb-1 text-[12px] font-[600] uppercase tracking-widest text-white/70">Termômetro da Comunidade</p>
+      <div className="text-[48px] font-[800] leading-none text-white">73%</div>
+      <p className="mt-3 text-[14px] leading-[1.6] text-white/[0.85]">
+        Acreditam que o Brasil chega à semifinal
+      </p>
+    </section>
+  )
+}
+
+function EstatisticasCard() {
+  const stats = [
+    { value: '412', label: 'votos hoje' },
+    { value: '27', label: 'enquetes' },
+    { value: '103', label: 'usuários' },
+  ]
+  return (
+    <section
+      className="rounded-[20px] bg-white p-6"
+      style={{ border: '1px solid rgba(15,23,42,0.06)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}
+    >
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(37,99,235,0.08)' }}>
+          <BarChart3 className="h-[18px] w-[18px] text-[#2563EB]" strokeWidth={2} />
+        </div>
+        <h3 className="text-[14px] font-[700] text-[#0F172A]">Estatísticas da Copa</h3>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {stats.map(s => (
+          <div key={s.label} className="flex flex-col items-center rounded-[12px] py-3" style={{ background: '#F8FAFC' }}>
+            <span className="text-[24px] font-[800] leading-none text-[#0F172A]">{s.value}</span>
+            <span className="mt-1 text-center text-[12px] text-[#64748B]">{s.label}</span>
+          </div>
+        ))}
       </div>
     </section>
   )
