@@ -35,6 +35,39 @@ function Avatar({ label, green = false }: { label: string, green?: boolean }) {
   return <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] font-black text-white ${green ? 'bg-[#16C45B]' : 'bg-gradient-to-br from-[#6C3BFF] to-[#16C45B]'}`}>{label}</div>
 }
 
+function HeroSection() {
+  return (
+    <div className="relative overflow-hidden rounded-[28px] bg-white px-6 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03] sm:px-7 sm:py-6">
+      <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-[#6C3BFF] to-[#16C45B] rounded-t-[28px]" />
+      <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[#6C3BFF]/[0.03]" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-1.5 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[#6C3BFF]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#6C3BFF]" />
+            Copa do Mundo 2026
+          </div>
+          <h1 className="text-xl font-black leading-tight tracking-[-0.03em] text-[#111827] sm:text-2xl">
+            Descubra quem pensa como você.
+          </h1>
+          <p className="mt-1.5 max-w-sm text-[12px] font-medium leading-relaxed text-[#6B7280]">
+            Vote nas maiores discussões da Copa e compare opiniões com seus amigos.
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2 sm:flex-col">
+          <div className="rounded-2xl bg-gradient-to-br from-[#1a1033] to-[#2d1f5e] px-4 py-2.5 text-center ring-1 ring-white/10">
+            <div className="text-[18px] font-black leading-none text-white">25+</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-wide text-white/40">Enquetes</div>
+          </div>
+          <div className="rounded-2xl bg-gradient-to-br from-[#1a1033] to-[#2d1f5e] px-4 py-2.5 text-center ring-1 ring-white/10">
+            <div className="text-[18px] font-black leading-none text-[#16C45B]">∞</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-wide text-white/40">Amigos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [polls, setPolls] = useState<HomePoll[]>([])
   const [votedPolls, setVotedPolls] = useState<Set<string>>(new Set())
@@ -191,7 +224,8 @@ export default function HomePage() {
     <div className="pb-10 lg:pb-6">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
 
-        <main className="min-w-0">
+        <main className="min-w-0 space-y-4">
+          <HeroSection />
           <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} onVote={handlePollVote} />
 
           <div className="mt-5 grid gap-4 lg:hidden">
