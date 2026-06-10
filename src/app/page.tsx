@@ -382,7 +382,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
   return (
-    <section className="overflow-hidden rounded-[32px] my-10" style={{ background: '#101722', padding: '32px' }}>
+    <section className="overflow-hidden my-10 rounded-[24px] px-[18px] py-[18px] pb-[110px] md:rounded-[32px] md:p-[32px] md:pb-[32px]" style={{ background: '#101722' }}>
       <div className="mb-6 flex items-center justify-between gap-2">
         <h2 className="text-[24px] font-[700] tracking-[-0.02em] text-white">Enquetes do dia</h2>
         {pollsReady && !isHydratingVotes && polls.length > 0 && (
@@ -391,9 +391,9 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       </div>
       <div>
       {!pollsReady || isHydratingVotes ? (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:gap-6 md:grid-cols-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse rounded-[20px] p-6 min-h-[240px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div key={i} className="animate-pulse rounded-[18px] p-[18px] md:rounded-[20px] md:p-6 min-h-[180px] md:min-h-[240px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
               <div className="mb-3 flex items-start gap-3">
                 <div className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-200" />
                 <div className="flex-1 pt-1">
@@ -409,16 +409,16 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:gap-6 md:grid-cols-2">
         {polls.map((poll) => (
-          <div key={poll.id} className="group/card rounded-[20px] flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', padding: '24px', minHeight: '240px' }}>
+          <div key={poll.id} className="group/card flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1 rounded-[22px] p-[18px] md:rounded-[20px] md:p-[24px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)', minHeight: 'auto' }}>
             <div className="flex items-start gap-3">
-              <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">
-                <Activity className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2.2} />
+              <div className="shrink-0 grid h-9 w-9 place-items-center rounded-[12px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)] md:h-10 md:w-10 md:rounded-[14px]" aria-hidden="true">
+                <Activity className="h-[16px] w-[16px] text-[#16A34A] md:h-[18px] md:w-[18px]" strokeWidth={2.2} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[16px] font-[600] leading-[1.4] text-[#0F172A]">{poll.question}</p>
+                  <p className="text-[15px] font-[600] leading-[1.35] text-[#0F172A] md:text-[16px] md:leading-[1.4]">{poll.question}</p>
                   {votedPolls.has(poll.id) && (
                     <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold text-[#16A34A]" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.20)' }}>
                       <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
