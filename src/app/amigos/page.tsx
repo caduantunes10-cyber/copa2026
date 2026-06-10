@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Search, Share2, TrendingUp, UserPlus, Users } from 'lucide-react'
+import { Search, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity, Profile } from '@/types'
-import toast from 'react-hot-toast'
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime()
@@ -40,16 +39,17 @@ function ActionText({ item }: { item: FeedActivity }) {
   return <span>{item.action_type}</span>
 }
 
-function Avatar({ profile }: { profile: Profile }) {
+function Avatar({ profile, size = 'md' }: { profile: Profile, size?: 'sm' | 'md' }) {
+  const dim = size === 'sm' ? 'h-8 w-8 text-[11px]' : 'h-10 w-10 text-[12px]'
   return profile.avatar_url ? (
     <img
       src={profile.avatar_url}
       alt={profile.full_name || ''}
-      className="h-11 w-11 rounded-full object-cover"
+      className={`${dim} rounded-full object-cover shrink-0`}
     />
   ) : (
-    <div className="h-11 w-11 flex items-center justify-center rounded-full bg-gray-300 font-bold">
-      {profile.full_name?.[0] || 'U'}
+    <div className={`${dim} shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-[#6C3BFF] to-[#16C45B] font-black text-white`}>
+      {profile.full_name?.[0]?.toUpperCase() || 'U'}
     </div>
   )
 }
@@ -66,28 +66,30 @@ function UserCard({
   const router = useRouter()
 
   return (
-    <div className="flex items-center justify-between p-3 border rounded-xl">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-black/[0.04] shadow-sm">
+      <div className="flex items-center gap-3 min-w-0">
         <Avatar profile={profile} />
-        <div>
-          <div className="font-bold">{profile.full_name || profile.username}</div>
-          <div className="text-xs text-gray-500">{profile.total_votes} votos</div>
+        <div className="min-w-0">
+          <div className="text-[13px] font-bold text-[#111827] truncate">{profile.full_name || profile.username}</div>
+          <div className="text-[11px] text-[#9CA3AF] font-medium">{profile.total_votes ?? 0} votos</div>
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 shrink-0 ml-3">
         {isFollowing && (
           <button
             onClick={() => router.push(`/premium/compare/${profile.id}`)}
-            className="px-3 py-1 rounded-full text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
+            className="px-3 py-1.5 rounded-full text-[11px] font-black bg-[#F6F1FF] text-[#6C3BFF] hover:bg-[#ede9ff] transition"
           >
-            Comparar opiniões
+            Comparar
           </button>
         )}
         <button
           onClick={() => onToggleFollow(profile.id, isFollowing)}
-          className={`px-3 py-1 rounded-full text-sm font-bold ${
-            isFollowing ? 'bg-gray-200' : 'bg-purple-600 text-white'
+          className={`px-3 py-1.5 rounded-full text-[11px] font-black transition ${
+            isFollowing
+              ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              : 'bg-[#6C3BFF] text-white hover:bg-[#5b2fe0]'
           }`}
         >
           {isFollowing ? 'Seguindo' : 'Seguir'}
@@ -150,22 +152,13 @@ export default function AmigosPage() {
           .delete()
           .eq('follower_id', currentUser)
           .eq('following_id', id)
-
-        setFollowingIds(prev => {
-          const s = new Set(prev)
-          s.delete(id)
-          return s
-        })
-
-        setFollowing(prev => prev.filter(p => p.id !== id))
       } else {
         await supabase.from('friendships').insert({
           follower_id: currentUser,
           following_id: id
         })
-
-        setFollowingIds(prev => new Set([...prev, id]))
       }
+      await Promise.all([loadFeed(), loadFollowing()])
     } catch (err) {
       console.error(err)
     } finally {
@@ -182,47 +175,92 @@ export default function AmigosPage() {
     setSearchResults(data.users || [])
   }
 
-  return (
-    <div className="p-4 space-y-4">
+  const tabs = [
+    { key: 'feed', label: 'Feed' },
+    { key: 'seguindo', label: 'Seguindo' },
+    { key: 'busca', label: 'Buscar' },
+  ] as const
 
-      <div className="flex gap-2">
-        <button onClick={() => setTab('feed')}>Feed</button>
-        <button onClick={() => setTab('seguindo')}>Seguindo</button>
-        <button onClick={() => setTab('busca')}>Buscar</button>
+  return (
+    <div className="space-y-4">
+
+      <div className="flex gap-1 rounded-2xl bg-white p-1 ring-1 ring-black/[0.04] shadow-sm w-fit">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`rounded-xl px-4 py-2 text-[12px] font-black transition-all ${
+              tab === t.key
+                ? 'bg-[#6C3BFF] text-white shadow-sm'
+                : 'text-[#6B7280] hover:text-[#111827]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {tab === 'feed' && (
-        <div className="space-y-3">
-          {feed.map(item => (
-            <div key={item.id} className="border p-3 rounded-xl">
-              <div className="font-bold">{item.profile?.full_name}</div>
-              <div><ActionText item={item} /></div>
+        <div className="space-y-2">
+          {loading ? (
+            <p className="text-[12px] font-semibold text-[#9CA3AF] py-2">Carregando...</p>
+          ) : feed.length === 0 ? (
+            <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-8 text-center">
+              <Users className="h-8 w-8 mx-auto mb-3 text-slate-300" />
+              <p className="text-[12px] font-semibold text-[#9CA3AF]">Seus amigos ainda não votaram ou você ainda não segue ninguém.</p>
             </div>
-          ))}
+          ) : (
+            feed.map(item => (
+              <div key={item.id} className="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-black/[0.04] shadow-sm">
+                {item.profile && <Avatar profile={item.profile} size="sm" />}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[12px] font-black text-[#111827] truncate">{item.profile?.full_name}</span>
+                    <span className="shrink-0 text-[10px] font-semibold text-[#9CA3AF]">{timeAgo(item.created_at)}</span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-medium text-[#6B7280] leading-snug"><ActionText item={item} /></div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
       {tab === 'seguindo' && (
-        <div className="space-y-3">
-          {following.map(p => (
-            <UserCard
-              key={p.id}
-              profile={p}
-              isFollowing={followingIds.has(p.id)}
-              onToggleFollow={handleToggleFollow}
-            />
-          ))}
+        <div className="space-y-2">
+          {following.length === 0 ? (
+            <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-8 text-center">
+              <Users className="h-8 w-8 mx-auto mb-3 text-slate-300" />
+              <p className="text-[12px] font-semibold text-[#9CA3AF]">Você ainda não segue ninguém. Use Buscar para encontrar amigos.</p>
+            </div>
+          ) : (
+            following.map(p => (
+              <UserCard
+                key={p.id}
+                profile={p}
+                isFollowing={followingIds.has(p.id)}
+                onToggleFollow={handleToggleFollow}
+              />
+            ))
+          )}
         </div>
       )}
 
       {tab === 'busca' && (
-        <div className="space-y-3">
-          <input
-            className="border p-2 w-full"
-            placeholder="Buscar..."
-            value={searchQuery}
-            onChange={e => handleSearch(e.target.value)}
-          />
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
+            <input
+              className="w-full rounded-2xl bg-white pl-10 pr-4 py-2.5 text-[13px] font-medium text-[#111827] ring-1 ring-slate-200 outline-none focus:ring-[#6C3BFF]/40 focus:ring-2 transition placeholder:text-[#9CA3AF]"
+              placeholder="Buscar por nome..."
+              value={searchQuery}
+              onChange={e => handleSearch(e.target.value)}
+            />
+          </div>
+
+          {searchResults.length === 0 && searchQuery.length >= 2 && (
+            <p className="text-[12px] font-semibold text-[#9CA3AF] py-2">Nenhum usuário encontrado.</p>
+          )}
 
           {searchResults.map(p => (
             <UserCard
