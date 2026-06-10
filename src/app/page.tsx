@@ -325,20 +325,22 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                 const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                 const selected = selectedPollOptions[poll.id] === optionIndex
                 return (
-                  <div key={`feat-${poll.id}-${optionIndex}`} className={`rounded-[14px] px-4 py-3 ring-1 transition-all ${
+                  <div key={`feat-${poll.id}-${optionIndex}`} className={`w-full max-w-full min-w-0 overflow-hidden rounded-[14px] px-4 py-3 ring-1 transition-all ${
                     selected
                       ? 'bg-[#F0FDF4] ring-[#22C55E]/30 shadow-[0_2px_8px_rgba(34,197,94,0.12)]'
                       : 'bg-[#F8FAFC] ring-black/[0.05]'
                   }`}>
-                    <div className="flex items-center gap-3">
-                      <span className={`flex-1 min-w-0 overflow-hidden truncate text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
+                    <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_48px] items-center gap-2">
+                      <span className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
                       <span className={`w-12 shrink-0 text-right tabular-nums text-[13px] font-[400] ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                     </div>
-                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
-                      <div
-                        className={`h-full rounded-full transition-all duration-700 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#2563EB]/60'}`}
-                        style={{ width: `${percentage}%` }}
-                      />
+                    <div className="mt-2 w-full max-w-full overflow-hidden">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                        <div
+                          className={`h-full max-w-full rounded-full transition-all duration-700 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#2563EB]/60'}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )
@@ -442,16 +444,18 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                           const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                           const selected = selectedPollOptions[poll.id] === optionIndex
                           return (
-                            <div key={`${poll.id}-${optionIndex}`} className="flex flex-col justify-center overflow-hidden rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
-                              <div className="flex items-center gap-2">
-                                <span className="flex-1 min-w-0 overflow-hidden truncate text-[14px] font-[500] text-[#475569]">{label}</span>
+                            <div key={`${poll.id}-${optionIndex}`} className="w-full max-w-full min-w-0 overflow-hidden rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
+                              <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_48px] items-center gap-2">
+                                <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-[500] text-[#475569]">{label}</span>
                                 <span className="w-12 shrink-0 text-right tabular-nums text-[13px] font-bold" style={{ color: selected ? '#16A34A' : '#64748B' }}>{percentage}%</span>
                               </div>
-                              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
-                                <div
-                                  className="h-full rounded-full transition-all duration-500"
-                                  style={{ width: `${percentage}%`, background: '#22C55E' }}
-                                />
+                              <div className="mt-1.5 w-full max-w-full overflow-hidden">
+                                <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
+                                  <div
+                                    className="h-full max-w-full rounded-full transition-all duration-500"
+                                    style={{ width: `${percentage}%`, background: '#22C55E' }}
+                                  />
+                                </div>
                               </div>
                             </div>
                           )
