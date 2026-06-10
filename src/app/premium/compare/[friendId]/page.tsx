@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Users, CheckCircle, XCircle, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Users, CheckCircle, XCircle, TrendingUp, ChevronDown, ChevronUp, Heart, Flame, Swords } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface FriendProfile {
@@ -99,10 +99,11 @@ export default function FriendComparisonPage() {
   }
 
   const getCompatibilityLabel = (score: number) => {
-    if (score >= 80) return 'Muito parecidos'
-    if (score >= 60) return 'Bastante parecidos'
-    if (score >= 40) return 'Opiniões mistas'
-    return 'Visões bem diferentes'
+    if (score >= 90) return 'Almas futebolísticas'
+    if (score >= 75) return 'Muito parecidos'
+    if (score >= 50) return 'Boa sintonia'
+    if (score >= 25) return 'Pensam diferente'
+    return 'Rivais declarados'
   }
 
   if (loading) {
@@ -156,12 +157,57 @@ export default function FriendComparisonPage() {
   console.log('DIFFERENCES', differences)
 
   const scoreColors = getScoreColor(compatibility_score)
+  const topAgreement = agreements[0] ?? null
+  const topDifference = differences[0] ?? null
+
+  const scoreDiff = summary.agreements - summary.differences
+  const placarLabel = scoreDiff > 0 ? 'Vocês combinam mais do que divergem' : scoreDiff < 0 ? 'Vocês divergem mais do que combinam' : 'Empate técnico'
 
   return (
-    <div className="space-y-4 pb-10">
+    <ComparisonView
+      compatibility_score={compatibility_score}
+      friend_profile={friend_profile}
+      summary={summary}
+      agreements={agreements}
+      differences={differences}
+      limitedData={limitedData}
+      scoreColors={scoreColors}
+      getCompatibilityLabel={getCompatibilityLabel}
+      topAgreement={topAgreement}
+      topDifference={topDifference}
+      placarLabel={placarLabel}
+      onBack={() => router.back()}
+      onGoHome={() => router.push('/')}
+    />
+  )
+}
+
+function ComparisonView({
+  compatibility_score, friend_profile, summary, agreements, differences, limitedData,
+  scoreColors, getCompatibilityLabel, topAgreement, topDifference, placarLabel, onBack, onGoHome
+}: {
+  compatibility_score: number
+  friend_profile: FriendProfile
+  summary: { total_compared: number; agreements: number; differences: number; compatibility_percentage: number; message?: string }
+  agreements: Agreement[]
+  differences: Difference[]
+  limitedData: boolean
+  scoreColors: { text: string; bg: string; ring: string; bar: string }
+  getCompatibilityLabel: (n: number) => string
+  topAgreement: Agreement | null
+  topDifference: Difference | null
+  placarLabel: string
+  onBack: () => void
+  onGoHome: () => void
+}) {
+  const [showAgreements, setShowAgreements] = useState(false)
+  const [showDifferences, setShowDifferences] = useState(false)
+
+  return (
+    <div className="space-y-4 pb-28">
 
       {/* Back nav */}
-      <button onClick={() => router.back()} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-black text-[#6B7280] hover:bg-white hover:text-[#111827] transition">
+      <button onClick={onBack} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-black text-[#6B7280] hover:bg-white hover:text-[#111827] transition">
         <ArrowLeft className="h-3.5 w-3.5" /> Voltar
       </button>
 
@@ -179,13 +225,10 @@ export default function FriendComparisonPage() {
           {limitedData && (
             <p className="mt-3 text-[11px] font-semibold text-[#F59E0B]">Baseado em dados parciais</p>
           )}
-          {summary.message && (
-            <p className="mt-2 text-[11px] font-medium text-[#6B7280]">{summary.message}</p>
-          )}
         </div>
       </section>
 
-      {/* Friend profile + stats */}
+      {/* Friend profile + premium summary */}
       <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
         <div className="flex min-w-0 items-center gap-3 border-b border-slate-100 pb-4">
           {friend_profile.avatar_url ? (
@@ -221,50 +264,118 @@ export default function FriendComparisonPage() {
         </div>
       </section>
 
-      {/* Agreements */}
-      {agreements.length > 0 && (
+      {/* Placar da amizade */}
+      {summary.total_compared > 0 && (
         <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-[#16C45B]" />
-            <h3 className="text-[13px] font-black text-[#111827]">Vocês pensaram igual</h3>
-            <span className="ml-auto text-[11px] font-black text-[#16C45B]">{agreements.length}</span>
+            <Swords className="h-4 w-4 text-[#6C3BFF]" strokeWidth={2.2} />
+            <h3 className="text-[13px] font-black text-[#111827]">Placar da amizade</h3>
           </div>
-          <div className="space-y-2">
-            {agreements.map((agreement) => (
-              <div key={agreement.poll_id} className="rounded-xl bg-[#F0FDF4] px-4 py-3 ring-1 ring-[#16C45B]/15">
-                <div className="text-[11px] font-semibold text-[#6B7280]">{agreement.question}</div>
-                <div className="mt-1 text-[12px] font-black text-[#16C45B]">Ambos: {agreement.option_text}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-[#F0FDF4] px-4 py-3 text-center ring-1 ring-[#16C45B]/15">
+              <div className="text-2xl font-black tracking-tight text-[#16C45B]">{summary.agreements}</div>
+              <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[#16C45B]/70">concordâncias</div>
+            </div>
+            <div className="rounded-xl bg-[#FFF5F5] px-4 py-3 text-center ring-1 ring-[#EF4444]/15">
+              <div className="text-2xl font-black tracking-tight text-[#EF4444]">{summary.differences}</div>
+              <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[#EF4444]/70">divergências</div>
+            </div>
+          </div>
+          <p className="mt-3 text-center text-[12px] font-bold text-[#6B7280]">{placarLabel}</p>
+        </section>
+      )}
+
+      {/* Maior conexão */}
+      {topAgreement && (
+        <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-[#16C45B]" strokeWidth={2.2} />
+            <h3 className="text-[13px] font-black text-[#111827]">Maior conexão</h3>
+          </div>
+          <div className="rounded-xl bg-[#F0FDF4] px-4 py-3 ring-1 ring-[#16C45B]/15">
+            <div className="text-[11px] font-semibold text-[#6B7280]">{topAgreement.question}</div>
+            <div className="mt-1.5 text-[12px] font-black text-[#16C45B]">Ambos: {topAgreement.option_text}</div>
           </div>
         </section>
       )}
 
-      {/* Differences */}
-      {differences.length > 0 && (
+      {/* Maior batalha */}
+      {topDifference && (
         <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <XCircle className="h-4 w-4 text-[#EF4444]" />
-            <h3 className="text-[13px] font-black text-[#111827]">Vocês divergiram</h3>
-            <span className="ml-auto text-[11px] font-black text-[#EF4444]">{differences.length}</span>
+            <Flame className="h-4 w-4 text-[#F59E0B]" strokeWidth={2.2} />
+            <h3 className="text-[13px] font-black text-[#111827]">Maior batalha</h3>
           </div>
-          <div className="space-y-2">
-            {differences.map((difference) => (
-              <div key={difference.poll_id} className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
-                <div className="text-[11px] font-semibold text-[#6B7280]">{difference.question}</div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
-                    <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
-                    <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.user_option_text}</div>
-                  </div>
-                  <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
-                    <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
-                    <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.friend_option_text}</div>
+          <div className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
+            <div className="text-[11px] font-semibold text-[#6B7280]">{topDifference.question}</div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
+                <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
+                <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{topDifference.user_option_text}</div>
+              </div>
+              <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
+                <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
+                <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{topDifference.friend_option_text}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Collapsible: Agreements */}
+      {agreements.length > 0 && (
+        <section className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowAgreements(v => !v)}
+            className="flex w-full items-center gap-2 px-5 py-4 text-left"
+          >
+            <span className="text-base">❤️</span>
+            <span className="flex-1 text-[13px] font-black text-[#111827]">Ver concordâncias ({agreements.length})</span>
+            {showAgreements ? <ChevronUp className="h-4 w-4 text-[#9CA3AF]" /> : <ChevronDown className="h-4 w-4 text-[#9CA3AF]" />}
+          </button>
+          {showAgreements && (
+            <div className="space-y-2 px-5 pb-4">
+              {agreements.map((agreement) => (
+                <div key={agreement.poll_id} className="rounded-xl bg-[#F0FDF4] px-4 py-3 ring-1 ring-[#16C45B]/15">
+                  <div className="text-[11px] font-semibold text-[#6B7280]">{agreement.question}</div>
+                  <div className="mt-1 text-[12px] font-black text-[#16C45B]">Ambos: {agreement.option_text}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Collapsible: Differences */}
+      {differences.length > 0 && (
+        <section className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowDifferences(v => !v)}
+            className="flex w-full items-center gap-2 px-5 py-4 text-left"
+          >
+            <span className="text-base">🔥</span>
+            <span className="flex-1 text-[13px] font-black text-[#111827]">Ver divergências ({differences.length})</span>
+            {showDifferences ? <ChevronUp className="h-4 w-4 text-[#9CA3AF]" /> : <ChevronDown className="h-4 w-4 text-[#9CA3AF]" />}
+          </button>
+          {showDifferences && (
+            <div className="space-y-2 px-5 pb-4">
+              {differences.map((difference) => (
+                <div key={difference.poll_id} className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
+                  <div className="text-[11px] font-semibold text-[#6B7280]">{difference.question}</div>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
+                      <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
+                      <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.user_option_text}</div>
+                    </div>
+                    <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
+                      <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
+                      <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.friend_option_text}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -276,7 +387,7 @@ export default function FriendComparisonPage() {
           <p className="mt-2 text-[12px] font-medium text-[#9CA3AF]">
             {summary.message || 'Vocês ainda não votaram nas mesmas enquetes.'}
           </p>
-          <button className="mt-5 rounded-2xl bg-[#6C3BFF] px-5 py-2.5 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)] hover:bg-[#5B2FE5] transition" onClick={() => router.push('/')}>
+          <button className="mt-5 rounded-2xl bg-[#6C3BFF] px-5 py-2.5 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)] hover:bg-[#5B2FE5] transition" onClick={onGoHome}>
             Votar em Enquetes
           </button>
         </section>
