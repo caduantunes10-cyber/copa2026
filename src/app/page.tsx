@@ -21,29 +21,27 @@ const HOME_POLLS_LIMIT = 25
 
 function HeroSection() {
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] ring-1 ring-[#EAECF0] sm:rounded-[28px] sm:px-8 sm:py-8">
+    <div className="relative flex min-h-[100px] items-center overflow-hidden rounded-[20px] bg-white px-6 shadow-[0_4px_20px_rgba(15,23,42,0.06)] ring-1 ring-[#EAECF0] sm:min-h-[120px] sm:rounded-[28px] sm:px-8 lg:min-h-[140px]">
       <div className="pointer-events-none absolute left-0 top-0 h-[3px] w-full bg-gradient-to-r from-[#5B4BFF] to-[#18C964]" />
-      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#5B4BFF]/[0.06]" />
-      <div className="pointer-events-none absolute -bottom-6 right-24 h-20 w-20 rounded-full bg-[#18C964]/[0.07]" />
-      <div className="relative flex items-center justify-between gap-6">
-        <div className="min-w-0">
-          <div className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#5B4BFF]">
-            <span className="h-1 w-1 rounded-full bg-[#5B4BFF]" />
-            Copa do Mundo 2026
-          </div>
-          <h1 className="text-[20px] font-bold leading-[1.2] tracking-[-0.02em] text-[#0F172A] sm:text-[22px] lg:text-[24px]">
-            Descubra quem pensa como você.
-          </h1>
-          <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-[#667085] sm:text-[15px]">
-            Vote nas discussões da Copa e compare opiniões com seus amigos.
-          </p>
+      <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#5B4BFF]/[0.06]" />
+      <div className="pointer-events-none absolute bottom-0 right-32 h-24 w-24 rounded-full bg-[#18C964]/[0.07]" />
+      <div className="relative flex-1 py-6">
+        <div className="mb-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#5B4BFF]">
+          <span className="h-1 w-1 rounded-full bg-[#5B4BFF]" />
+          Copa do Mundo 2026
         </div>
-        <div className="hidden shrink-0 select-none sm:block" aria-hidden="true">
-          <div className="relative flex items-end justify-center">
-            <div className="pointer-events-none absolute -left-4 -top-4 h-16 w-16 rounded-full bg-[#5B4BFF]/[0.08]" />
-            <div className="pointer-events-none absolute -right-2 bottom-0 h-10 w-10 rounded-full bg-[#18C964]/[0.10]" />
-            <span className="relative text-[80px] leading-none lg:text-[96px]">🏆</span>
-          </div>
+        <h1 className="text-[20px] font-bold leading-[30px] tracking-[-0.02em] text-[#0F172A] sm:text-[22px] lg:text-[24px]">
+          Descubra quem pensa como você.
+        </h1>
+        <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-[#667085] sm:text-[15px]">
+          Vote nas discussões da Copa e compare opiniões com seus amigos.
+        </p>
+      </div>
+      <div className="pointer-events-none absolute bottom-0 right-8 hidden select-none sm:block" aria-hidden="true">
+        <div className="relative">
+          <div className="pointer-events-none absolute -left-6 top-4 h-12 w-12 rounded-full bg-[#5B4BFF]/[0.08]" />
+          <div className="pointer-events-none absolute -right-3 bottom-4 h-8 w-8 rounded-full bg-[#18C964]/[0.10]" />
+          <span className="relative block text-[120px] leading-none lg:text-[140px]">🏆</span>
         </div>
       </div>
     </div>
@@ -244,17 +242,17 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   const totalVotes = Object.values(results).reduce((sum, c) => sum + c, 0)
   const voted = votedPolls.has(poll.id)
   return (
-    <section className="overflow-hidden rounded-[20px] bg-[#F6FFF8] p-4 ring-1 ring-[#D9F4E5] shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-[28px] sm:p-6">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex h-7 items-center rounded-full bg-[#ECFDF3] px-3 text-[12px] font-bold text-[#16A34A] ring-1 ring-[#D9F4E5]">🔥 ENQUETE EM DESTAQUE</span>
+    <section className="overflow-hidden rounded-[20px] bg-[#F6FFF8] p-5 ring-1 ring-[#D9F4E5] shadow-[0_6px_24px_rgba(15,23,42,0.05)] sm:rounded-[28px] sm:p-6 lg:min-h-[340px]">
+      <div className="mb-4 flex items-center gap-2">
+        <span className="inline-flex h-[28px] items-center rounded-full bg-[#ECFDF3] px-3 text-[13px] font-bold text-[#16A34A] ring-1 ring-[#D9F4E5]">🔥 ENQUETE EM DESTAQUE</span>
         {voted && <span className="inline-flex h-6 items-center rounded-full bg-[#ECFDF3] px-[10px] text-[11px] font-semibold text-[#16A34A]">✓ Votado</span>}
       </div>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
-        <div className="hidden shrink-0 lg:block">
-          <div className="flex h-[150px] w-[200px] items-center justify-center rounded-[18px] text-[64px] leading-none select-none" style={{ background: 'linear-gradient(135deg, #EAFBF1, #EEF0FF)' }} aria-hidden="true">⚽</div>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
+        <div className="hidden shrink-0 lg:flex">
+          <div className="flex h-[160px] w-[260px] items-center justify-center rounded-[18px] text-[72px] leading-none select-none" style={{ background: 'linear-gradient(135deg, #EEF7FF, #F3FFF6)' }} aria-hidden="true">⚽</div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="mb-4 text-[20px] font-extrabold leading-[1.25] text-[#0F172A] sm:text-[24px] lg:text-[28px]">{poll.question}</p>
+        <div className="flex flex-1 min-w-0 flex-col justify-center">
+          <p className="mb-4 text-[22px] font-extrabold leading-[1.2] text-[#0F172A] sm:text-[26px] lg:text-[30px]">{poll.question}</p>
           <div className="space-y-2">
             {voted ? (
               poll.options.map((option, optionIndex) => {
@@ -268,7 +266,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                       <span className="truncate">{label}</span>
                       <span className="shrink-0 tabular-nums text-[12px] text-[#667085]">{percentage}%</span>
                     </div>
-                    <div className="mt-1 h-1.5 rounded-full bg-[#EAECF0]">
+                    <div className="mt-1 h-1.5 w-full rounded-full bg-[#EAECF0]">
                       <div className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-[#18C964]' : 'bg-[#5B4BFF]/40'}`} style={{ width: `${percentage}%` }} />
                     </div>
                   </div>
@@ -338,19 +336,19 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
         {polls.map((poll) => (
-          <div key={poll.id} className="rounded-[20px] bg-white p-4 ring-1 ring-[#EAECF0] shadow-[0_4px_20px_rgba(15,23,42,0.04)] flex flex-col gap-3">
-            <div className="flex items-start gap-3">
+          <div key={poll.id} className="rounded-[18px] bg-white p-3 ring-1 ring-[#EAECF0] shadow-[0_4px_20px_rgba(15,23,42,0.04)] flex flex-col gap-2">
+            <div className="flex items-start gap-2.5">
               <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[12px] bg-[#F4F6F8] text-[18px] leading-none select-none" aria-hidden="true">⚽</div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[15px] font-bold leading-[1.35] text-[#0F172A]">{poll.question}</p>
+                  <p className="text-[14px] font-bold leading-[20px] text-[#0F172A]">{poll.question}</p>
                   {votedPolls.has(poll.id) && (
                     <span className="shrink-0 inline-flex h-6 items-center rounded-full bg-[#ECFDF3] px-[10px] text-[11px] font-semibold text-[#16A34A]">✓ Votado</span>
                   )}
                 </div>
               </div>
             </div>
-            <div className="grid gap-1.5">
+            <div className="grid gap-1">
               {votedPolls.has(poll.id) ? (
                 resultsLoading.has(poll.id) ? (
                   <p className="rounded-[10px] bg-[#F4F6F8] px-3 py-2 text-[11px] text-[#667085]">Carregando resultados...</p>
@@ -371,7 +369,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                                 <span className="truncate">{label}</span>
                                 <span className="shrink-0 tabular-nums text-[11px] text-[#667085]">{percentage}%</span>
                               </div>
-                              <div className="mt-1 h-1 rounded-full bg-[#EAECF0]">
+                              <div className="mt-0.5 h-1 rounded-full bg-[#EAECF0]">
                                 <div className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-[#18C964]' : 'bg-[#5B4BFF]/40'}`} style={{ width: `${percentage}%` }} />
                               </div>
                             </div>
@@ -387,7 +385,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="flex h-9 w-full items-center rounded-[10px] bg-white px-3 text-left text-[12px] font-medium text-[#374151] ring-1 ring-[#EAECF0] transition-all hover:bg-[#F5F3FF] hover:text-[#5B4BFF] hover:ring-[#5B4BFF]/20 active:scale-[0.98]">
+                      className="flex h-9 w-full items-center rounded-[10px] bg-white px-3 text-left text-[12px] font-medium text-[#374151] ring-1 ring-[#EAECF0] transition-all hover:bg-[#F5F3FF] hover:text-[#5B4BFF] hover:ring-[#5B4BFF]/20 active:scale-[0.99]">
                       {label}
                     </button>
                   )
@@ -413,13 +411,13 @@ function ComoFuncionaCard() {
     { n: '3', text: 'Compare com Premium' },
   ]
   return (
-    <section className="rounded-[20px] bg-white p-4 ring-1 ring-[#EAECF0] shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
-      <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-[#667085]">Como funciona</div>
-      <div className="space-y-2.5">
+    <section className="rounded-[18px] bg-white p-3 ring-1 ring-[#EAECF0] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Como funciona</div>
+      <div className="space-y-2">
         {steps.map(s => (
-          <div key={s.n} className="flex items-start gap-2.5">
-            <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#5B4BFF]/[0.08] text-[10px] font-bold text-[#5B4BFF]">{s.n}</span>
-            <span className="text-[12px] font-medium leading-snug text-[#374151]">{s.text}</span>
+          <div key={s.n} className="flex items-center gap-2">
+            <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#5B4BFF]/[0.07] text-[9px] font-bold text-[#5B4BFF]">{s.n}</span>
+            <span className="text-[11px] font-medium leading-snug text-[#6B7280]">{s.text}</span>
           </div>
         ))}
       </div>
@@ -439,7 +437,7 @@ function FriendsCtaCard() {
         <h3 className="text-[14px] font-bold text-white">Amigos</h3>
       </div>
       <p className="mb-5 text-[12px] leading-relaxed text-white/50">Veja o que seus amigos votaram e descubra com quem você pensa igual.</p>
-      <Link href="/amigos" className="flex h-[52px] items-center justify-center rounded-[16px] bg-[#18C964] text-[13px] font-bold text-white transition hover:bg-[#15b358] active:scale-[0.98]">
+      <Link href="/amigos" className="flex h-12 items-center justify-center rounded-[16px] bg-[#18C964] text-[13px] font-bold text-white transition hover:bg-[#15b358] active:scale-[0.98]">
         Ver atividade
       </Link>
     </section>
@@ -457,7 +455,7 @@ function PremiumCtaCard() {
         </div>
         <h3 className="text-[14px] font-bold leading-snug text-white">Compatibilidade de opiniões</h3>
         <p className="mt-1.5 text-[12px] leading-relaxed text-white/60">Veja em % o quanto você e um amigo votaram igual.</p>
-        <Link href="/premium" className="mt-4 flex h-[52px] items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#5B4BFF] transition hover:bg-white/95 active:scale-[0.98]">
+        <Link href="/premium" className="mt-4 flex h-12 items-center justify-center rounded-[16px] bg-white text-[13px] font-bold text-[#5B4BFF] transition hover:bg-white/95 active:scale-[0.98]">
           Comparar agora
         </Link>
       </div>
