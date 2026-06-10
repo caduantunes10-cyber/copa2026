@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Users } from 'lucide-react'
+import { Crown, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 
@@ -22,11 +22,11 @@ function Card({ children, className = '' }: { children: React.ReactNode, classNa
   return <section className={`rounded-[22px] bg-white shadow-[0_10px_30px_rgba(17,24,39,0.06)] ring-1 ring-black/[0.03] ${className}`}>{children}</section>
 }
 
-function SectionHeader({ title, action }: { title: string, action?: string }) {
+function SectionHeader({ title, action, dark = false }: { title: string, action?: string, dark?: boolean }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-[13px] font-black uppercase tracking-[0.04em] text-[#111827]">{title}</h2>
-      {action && <span className="text-[10px] font-black uppercase text-[#6B7280]">{action}</span>}
+      <h2 className={`text-[13px] font-black uppercase tracking-[0.04em] ${dark ? 'text-white' : 'text-[#111827]'}`}>{title}</h2>
+      {action && <span className={`text-[10px] font-black uppercase ${dark ? 'text-white/40' : 'text-[#6B7280]'}`}>{action}</span>}
     </div>
   )
 }
@@ -252,8 +252,15 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
   return (
-    <Card className="p-4">
-      <SectionHeader title="Enquetes do Dia" action="Votar agora" />
+    <section className="overflow-hidden rounded-[22px] shadow-[0_10px_30px_rgba(17,24,39,0.10)]">
+      <div className="relative bg-[#0B1220] px-5 py-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#6C3BFF]/[0.08]" />
+        <div className="pointer-events-none absolute -bottom-6 right-24 h-16 w-16 rounded-full bg-[#16C45B]/[0.05]" />
+        <div className="relative">
+          <SectionHeader title="Enquetes do Dia" action="Votar agora" dark />
+        </div>
+      </div>
+      <div className="bg-white p-4">
       {!pollsReady || isHydratingVotes ? (
         <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
           {[1, 2, 3, 4].map(i => (
@@ -271,7 +278,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       ) : (
         <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
         {polls.map((poll) => (
-          <div key={poll.id} className="rounded-2xl bg-[#FAFBFD] p-3.5 ring-1 ring-black/[0.04] flex flex-col gap-2.5">
+          <div key={poll.id} className="rounded-2xl bg-white p-3.5 ring-1 ring-black/[0.06] flex flex-col gap-2.5">
             <div className="flex items-start justify-between gap-2">
               <p className="text-[15px] font-black leading-snug tracking-[-0.02em] text-[#111827]">{poll.question}</p>
               {votedPolls.has(poll.id) && (
@@ -305,7 +312,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                             </div>
                           )
                         })}
-                        <p className="text-[10px] font-semibold text-[#9CA3AF]">{totalVotes.toLocaleString('pt-BR')} votos</p>
+                        <p className="text-[11px] font-black text-[#111827]">{totalVotes.toLocaleString('pt-BR')} <span className="font-semibold text-[#9CA3AF]">votos</span></p>
                       </div>
                     )
                   })()
@@ -315,7 +322,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="w-full rounded-xl bg-white px-3 py-1.5 text-left text-[11px] font-bold text-[#374151] ring-1 ring-[#EEF0F4] transition-all hover:bg-[#F6F1FF] hover:text-[#6C3BFF] hover:ring-[#6C3BFF]/20 active:scale-[0.98]">
+                      className="w-full rounded-xl bg-[#FAFBFD] px-3 py-2 text-left text-[11px] font-bold text-[#374151] ring-1 ring-[#E5E7EB] transition-all hover:bg-[#F6F1FF] hover:text-[#6C3BFF] hover:ring-[#6C3BFF]/30 active:scale-[0.98]">
                       {label}
                     </button>
                   )
@@ -329,34 +336,42 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       {pollsReady && !isHydratingVotes && polls.length === 0 && (
         <p className="text-[12px] font-semibold text-[#9CA3AF] py-2">Nenhuma enquete ativa no momento.</p>
       )}
-    </Card>
+      </div>
+    </section>
   )
 }
 
 function FriendsCtaCard() {
   return (
-    <Card className="p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#F0FDF4]">
-          <Users className="h-4 w-4 text-[#16C45B]" />
-        </span>
-        <h3 className="text-[12px] font-black uppercase tracking-[0.04em] text-[#111827]">Amigos</h3>
+    <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#0B1220] to-[#111827] p-4 ring-1 ring-white/[0.06] shadow-[0_10px_30px_rgba(7,17,31,0.25)]">
+      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#16C45B]/[0.07]" />
+      <div className="pointer-events-none absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-[#6C3BFF]/[0.06]" />
+      <div className="relative">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.08] ring-1 ring-white/[0.1]">
+            <Users className="h-4 w-4 text-[#16C45B]" />
+          </span>
+          <h3 className="text-[12px] font-black uppercase tracking-[0.04em] text-white">Amigos</h3>
+        </div>
+        <p className="text-[11px] font-medium leading-[1.55] text-white/60">Veja o que seus amigos votaram e descubra com quem você pensa igual.</p>
+        <Link href="/amigos" className="mt-3.5 flex items-center justify-center gap-2 rounded-2xl bg-[#16C45B] px-4 py-2.5 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_6px_16px_rgba(22,196,91,0.28)] transition hover:bg-[#12b352] active:scale-[0.98]">
+          Ver atividade
+        </Link>
       </div>
-      <p className="text-[11px] font-medium leading-[1.55] text-[#6B7280]">Veja o que seus amigos votaram e descubra com quem você pensa igual.</p>
-      <Link href="/amigos" className="mt-3.5 flex items-center justify-center gap-2 rounded-2xl bg-[#F0FDF4] px-4 py-2.5 text-[11px] font-black uppercase tracking-wide text-[#16C45B] transition hover:bg-[#dcfce7]">
-        Ver atividade
-      </Link>
-    </Card>
+    </section>
   )
 }
 
 function PremiumCtaCard() {
   return (
-    <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#6C3BFF] to-[#4338CA] p-4 shadow-[0_12px_40px_rgba(108,59,255,0.28)]">
+    <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#6C3BFF] to-[#4338CA] p-4 ring-1 ring-white/[0.08] shadow-[0_12px_40px_rgba(108,59,255,0.28)]">
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/[0.06]" />
       <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/[0.06]" />
       <div className="relative">
-        <div className="mb-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white/60">Premium</div>
+        <div className="mb-1 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white/60">
+          <Crown className="h-3 w-3" />
+          Premium
+        </div>
         <h3 className="text-[13px] font-black leading-snug text-white">Compatibilidade de opiniões</h3>
         <p className="mt-1.5 text-[11px] font-medium leading-[1.55] text-white/70">Descubra em % o quanto você e um amigo votaram igual nas mesmas enquetes.</p>
         <Link href="/premium" className="mt-4 flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-[11px] font-black uppercase tracking-wide text-[#6C3BFF] transition hover:bg-white/90 active:scale-[0.98]">
