@@ -330,8 +330,8 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                       ? 'bg-[#F0FDF4] ring-[#22C55E]/30 shadow-[0_2px_8px_rgba(34,197,94,0.12)]'
                       : 'bg-[#F8FAFC] ring-black/[0.05]'
                   }`}>
-                    <div className="flex items-center justify-between gap-3 text-[13px] font-semibold">
-                      <span className={`truncate text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
+                    <div className="flex min-w-0 items-center justify-between gap-3 text-[13px] font-semibold">
+                      <span className={`min-w-0 truncate text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
                       <span className={`shrink-0 tabular-nums text-[13px] font-[400] ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                     </div>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
@@ -350,7 +350,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                   <button
                     key={`feat-${poll.id}-${optionIndex}`}
                     onClick={() => onVote(poll, optionIndex)}
-                    className="flex h-12 w-full items-center rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[15px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
+                    className="flex h-12 w-full min-w-0 items-center overflow-hidden rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[15px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
                     {label}
                   </button>
                 )
@@ -443,8 +443,8 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                           const selected = selectedPollOptions[poll.id] === optionIndex
                           return (
                             <div key={`${poll.id}-${optionIndex}`} className="flex flex-col justify-center rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="truncate text-[14px] font-[500] text-[#475569]">{label}</span>
+                              <div className="flex min-w-0 items-center justify-between gap-2">
+                                <span className="min-w-0 truncate text-[14px] font-[500] text-[#475569]">{label}</span>
                                 <span className="shrink-0 tabular-nums text-[13px] font-bold" style={{ color: selected ? '#16A34A' : '#64748B' }}>{percentage}%</span>
                               </div>
                               <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
@@ -466,7 +466,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="flex w-full items-center rounded-[10px] px-3 py-2.5 text-left text-[14px] font-[500] text-[#475569] transition-all duration-200 hover:text-[#0F172A] active:scale-[0.99]" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
+                      className="flex w-full min-w-0 items-center overflow-hidden rounded-[10px] px-3 py-2.5 text-left text-[14px] font-[500] text-[#475569] transition-all duration-200 hover:text-[#0F172A] active:scale-[0.99]" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
                       {label}
                     </button>
                   )

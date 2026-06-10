@@ -187,16 +187,16 @@ export default function FriendComparisonPage() {
 
       {/* Friend profile + stats */}
       <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+        <div className="flex min-w-0 items-center gap-3 border-b border-slate-100 pb-4">
           {friend_profile.avatar_url ? (
-            <img src={friend_profile.avatar_url} alt={friend_profile.username} className="h-12 w-12 rounded-full object-cover shrink-0" />
+            <img src={friend_profile.avatar_url} alt={friend_profile.username} className="h-12 w-12 shrink-0 rounded-full object-cover" />
           ) : (
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6C3BFF] to-[#16C45B] text-[15px] font-black text-white">
               {friend_profile.username?.[0]?.toUpperCase() || 'U'}
             </div>
           )}
-          <div>
-            <div className="text-[14px] font-black text-[#111827]">{friend_profile.username}</div>
+          <div className="min-w-0">
+            <div className="truncate text-[14px] font-black text-[#111827]">{friend_profile.username}</div>
             <div className="mt-0.5 flex items-center gap-2">
               {friend_profile.is_premium && (
                 <span className="inline-flex items-center rounded-full bg-[#6C3BFF]/10 px-2 py-0.5 text-[10px] font-black text-[#6C3BFF]">Premium</span>
@@ -253,13 +253,13 @@ export default function FriendComparisonPage() {
               <div key={difference.poll_id} className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
                 <div className="text-[11px] font-semibold text-[#6B7280]">{difference.question}</div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
+                  <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
                     <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
-                    <div className="mt-0.5 text-[11px] font-bold text-[#111827]">{difference.user_option_text}</div>
+                    <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.user_option_text}</div>
                   </div>
-                  <div className="rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
-                    <div className="text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
-                    <div className="mt-0.5 text-[11px] font-bold text-[#111827]">{difference.friend_option_text}</div>
+                  <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
+                    <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
+                    <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.friend_option_text}</div>
                   </div>
                 </div>
               </div>

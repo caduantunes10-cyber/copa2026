@@ -48,18 +48,18 @@ export default function FriendComparisonCard({
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           {friend.avatar_url ? (
-            <img src={friend.avatar_url} alt={friend.username} className="h-10 w-10 rounded-full object-cover" />
+            <img src={friend.avatar_url} alt={friend.username} className="h-10 w-10 shrink-0 rounded-full object-cover" />
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8FFF0] text-sm font-black text-[#16C45B]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8FFF0] text-sm font-black text-[#16C45B]">
               {friend.username?.[0] || 'U'}
             </div>
           )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-gray-900">{friend.username}</h3>
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
+              <h3 className="truncate font-semibold text-gray-900 max-w-[160px] sm:max-w-none">{friend.username}</h3>
               {friend.is_premium && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#6C3BFF]/10 text-[#6C3BFF]">
                   Premium
@@ -86,7 +86,7 @@ export default function FriendComparisonCard({
         <button 
           onClick={handleCompare}
           disabled={isLoading}
-          className="flex items-center gap-2 rounded-full bg-[#6C3BFF] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)] hover:bg-[#5B2FE5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#6C3BFF] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)] hover:bg-[#5B2FE5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors sm:w-auto"
         >
           {isLoading ? (
             'Carregando...'
