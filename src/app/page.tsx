@@ -225,12 +225,14 @@ export default function HomePage() {
           <div className="mt-5 grid gap-4 lg:hidden">
             <FriendsCtaCard />
             <PremiumCtaCard />
+            <ComoFuncionaCard />
           </div>
         </main>
 
         <aside className="hidden space-y-4 lg:block">
           <FriendsCtaCard />
           <PremiumCtaCard />
+          <ComoFuncionaCard />
         </aside>
 
       </div>
@@ -253,39 +255,39 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
 
   return (
     <section className="overflow-hidden rounded-[22px] shadow-[0_10px_30px_rgba(17,24,39,0.10)]">
-      <div className="relative bg-[#0B1220] px-5 py-4">
+      <div className="relative bg-[#0B1220] px-5 py-3.5">
         <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#6C3BFF]/[0.08]" />
         <div className="pointer-events-none absolute -bottom-6 right-24 h-16 w-16 rounded-full bg-[#16C45B]/[0.05]" />
-        <div className="relative">
-          <SectionHeader title="Enquetes do Dia" action="Votar agora" dark />
+        <div className="relative flex items-center justify-between">
+          <h2 className="text-[13px] font-black uppercase tracking-[0.04em] text-white">Enquetes do Dia</h2>
+          <span className="text-[10px] font-black uppercase text-white/40">Votar agora</span>
         </div>
       </div>
-      <div className="bg-white p-4">
+      <div className="bg-white p-3">
       {!pollsReady || isHydratingVotes ? (
-        <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse rounded-2xl bg-[#FAFBFD] p-3.5 ring-1 ring-black/[0.04]">
-              <div className="mb-3 h-4 w-4/5 rounded-lg bg-slate-200" />
-              <div className="mb-1.5 h-3 w-1/3 rounded-lg bg-slate-100" />
-              <div className="space-y-2">
-                <div className="h-9 rounded-xl bg-slate-100" />
-                <div className="h-9 rounded-xl bg-slate-100" />
-                <div className="h-9 rounded-xl bg-slate-100" />
+        <div className="grid gap-2.5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="animate-pulse rounded-xl bg-[#FAFBFD] p-3 ring-1 ring-black/[0.04]">
+              <div className="mb-2.5 h-3.5 w-4/5 rounded-md bg-slate-200" />
+              <div className="mb-2 h-2.5 w-1/3 rounded-md bg-slate-100" />
+              <div className="space-y-1.5">
+                <div className="h-7 rounded-lg bg-slate-100" />
+                <div className="h-7 rounded-lg bg-slate-100" />
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-2.5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {polls.map((poll) => (
-          <div key={poll.id} className="rounded-2xl bg-white p-3.5 ring-1 ring-black/[0.06] flex flex-col gap-2.5">
+          <div key={poll.id} className={`rounded-xl bg-[#FAFBFD] p-3 ring-1 ring-black/[0.05] flex flex-col gap-2 border-l-2 ${votedPolls.has(poll.id) ? 'border-[#16C45B]' : 'border-[#6C3BFF]'}`}>
             <div className="flex items-start justify-between gap-2">
-              <p className="text-[15px] font-black leading-snug tracking-[-0.02em] text-[#111827]">{poll.question}</p>
+              <p className="text-[13px] font-black leading-snug tracking-[-0.02em] text-[#111827]">{poll.question}</p>
               {votedPolls.has(poll.id) && (
-                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#E8FFF0] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#16C45B] ring-1 ring-[#16C45B]/20">✓ Votado</span>
+                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#E8FFF0] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#16C45B] ring-1 ring-[#16C45B]/20">✓</span>
               )}
             </div>
-            <div className="grid gap-1.5">
+            <div className="grid gap-1">
               {votedPolls.has(poll.id) ? (
                 resultsLoading.has(poll.id) ? (
                   <p className="rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-[#6B7280] ring-1 ring-[#EEF0F4]">Carregando resultados...</p>
@@ -301,12 +303,12 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                           const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                           const selected = selectedPollOptions[poll.id] === optionIndex
                           return (
-                            <div key={`${poll.id}-${optionIndex}`} className={`rounded-xl px-3 py-2.5 text-[11px] font-black ring-1 ${selected ? 'bg-[#E8FFF0] text-[#16C45B] ring-[#16C45B]/20' : 'bg-white text-[#111827] ring-[#EEF0F4]'}`}>
+                            <div key={`${poll.id}-${optionIndex}`} className={`rounded-lg px-2.5 py-2 text-[11px] font-black ring-1 ${selected ? 'bg-[#E8FFF0] text-[#16C45B] ring-[#16C45B]/20' : 'bg-white text-[#111827] ring-[#EEF0F4]'}`}>
                               <div className="flex items-center justify-between gap-2">
                                 <span className="truncate">{label}</span>
                                 <span className="shrink-0 tabular-nums">{percentage}%</span>
                               </div>
-                              <div className="mt-2 h-2 rounded-full bg-[#EEF0F4]">
+                              <div className="mt-1.5 h-1.5 rounded-full bg-[#EEF0F4]">
                                 <div className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-[#16C45B]' : 'bg-[#6C3BFF]'}`} style={{ width: `${percentage}%` }} />
                               </div>
                             </div>
@@ -322,7 +324,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="w-full rounded-xl bg-[#FAFBFD] px-3 py-2 text-left text-[11px] font-bold text-[#374151] ring-1 ring-[#E5E7EB] transition-all hover:bg-[#F6F1FF] hover:text-[#6C3BFF] hover:ring-[#6C3BFF]/30 active:scale-[0.98]">
+                      className="w-full rounded-lg bg-white px-2.5 py-1.5 text-left text-[11px] font-semibold text-[#374151] ring-1 ring-[#E5E7EB] transition-all hover:bg-[#F6F1FF] hover:text-[#6C3BFF] hover:ring-[#6C3BFF]/30 active:scale-[0.98]">
                       {label}
                     </button>
                   )
@@ -336,6 +338,30 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       {pollsReady && !isHydratingVotes && polls.length === 0 && (
         <p className="text-[12px] font-semibold text-[#9CA3AF] py-2">Nenhuma enquete ativa no momento.</p>
       )}
+      </div>
+    </section>
+  )
+}
+
+function ComoFuncionaCard() {
+  const steps = [
+    { n: '01', text: 'Vote nas enquetes da Copa' },
+    { n: '02', text: 'Veja o que seus amigos votaram' },
+    { n: '03', text: 'Compare compatibilidade com Premium' },
+  ]
+  return (
+    <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#07111F] to-[#0B1220] p-4 ring-1 ring-white/[0.05]">
+      <div className="pointer-events-none absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-[#6C3BFF]/[0.05]" />
+      <div className="relative">
+        <div className="mb-3 text-[10px] font-black uppercase tracking-[0.08em] text-white/40">Como funciona</div>
+        <div className="space-y-2.5">
+          {steps.map(s => (
+            <div key={s.n} className="flex items-start gap-2.5">
+              <span className="mt-0.5 shrink-0 text-[10px] font-black tabular-nums text-[#6C3BFF]/70">{s.n}</span>
+              <span className="text-[12px] font-semibold leading-snug text-white/70">{s.text}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )
