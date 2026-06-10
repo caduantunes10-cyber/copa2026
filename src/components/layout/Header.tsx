@@ -30,7 +30,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#EAECF0] bg-[#F7F8FC]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[#EAECF0] bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
       <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-4 py-2.5 sm:px-5 lg:px-6">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-[#16C45B] bg-white text-[#16C45B]">
@@ -46,10 +46,10 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex">
-          <Link href="/" className="text-[12px] font-semibold text-[#6C3BFF]">Painel</Link>
-          <Link href="/amigos" className="text-[12px] font-semibold text-[#6B7280] transition hover:text-[#111827]">Amigos</Link>
-          <Link href="/premium" className="text-[12px] font-semibold text-[#6B7280] transition hover:text-[#111827]">Premium</Link>
+        <nav className="hidden items-center gap-10 lg:flex">
+          <Link href="/" className="text-[14px] font-semibold text-[#5B4BFF]">Painel</Link>
+          <Link href="/amigos" className="text-[14px] font-semibold text-[#667085] transition hover:text-[#0F172A]">Amigos</Link>
+          <Link href="/premium" className="text-[14px] font-semibold text-[#667085] transition hover:text-[#0F172A]">Premium</Link>
         </nav>
 
         <nav className="ml-3 hidden flex-1 justify-center gap-2 sm:flex lg:hidden">
