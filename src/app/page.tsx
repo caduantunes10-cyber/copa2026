@@ -616,14 +616,22 @@ type CompatibilityEntry = {
 
 function RankingCard() {
   const [entries, setEntries] = useState<CompatibilityEntry[]>([])
-  const [status, setStatus] = useState<'loading' | 'no-friends' | 'no-shared' | 'done'>('loading')
+  const [status, setStatus] = useState<'loading' | 'unauthenticated' | 'locked' | 'no-friends' | 'no-shared' | 'done'>('loading')
 
   useEffect(() => {
     const supabase = createClient()
 
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setStatus('no-friends'); return }
+      if (!user) { setStatus('unauthenticated'); return }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.is_premium) { setStatus('locked'); return }
 
       const { data: friendships } = await supabase
         .from('friendships')
@@ -682,6 +690,21 @@ function RankingCard() {
 
       {status === 'loading' && (
         <p className="text-[13px] font-[400] text-[#64748B]">Calculando ranking...</p>
+      )}
+      {status === 'unauthenticated' && (
+        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Entre para ver seu ranking de compatibilidade.</p>
+      )}
+      {status === 'locked' && (
+        <div>
+          <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Ranking de compatibilidade é um recurso Premium.</p>
+          <Link
+            href="/premium"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#6C3BFF] px-4 py-2 text-[12px] font-[700] text-white transition hover:bg-[#5B2FE5]"
+          >
+            <Crown className="h-3.5 w-3.5" strokeWidth={2.5} />
+            Conhecer Premium
+          </Link>
+        </div>
       )}
       {status === 'no-friends' && (
         <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Adicione amigos para ver seu ranking.</p>
