@@ -44,7 +44,7 @@ function HeroSection() {
         <div className="relative">
           <div className="pointer-events-none absolute -left-10 top-0 h-20 w-20 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.20) 0%, transparent 70%)' }} />
           <div className="pointer-events-none absolute -right-4 bottom-8 h-12 w-12 rounded-full" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)' }} />
-          <img src="/trophy.svg" alt="" aria-hidden="true" className="relative block h-[130px] w-auto lg:h-[150px]" style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25))' }} />
+          <span className="relative block text-[130px] leading-none lg:text-[150px]" style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25))' }}>🏆</span>
         </div>
       </div>
     </div>
