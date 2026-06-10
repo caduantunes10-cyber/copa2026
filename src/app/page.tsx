@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Activity, BarChart3, Crown, TrendingUp, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import type { FeedActivity } from '@/types'
 
 
 type HomePoll = {
@@ -62,6 +63,7 @@ export default function HomePage() {
   const [resultsLoading, setResultsLoading] = useState<Set<string>>(new Set())
   const [isHydratingVotes, setIsHydratingVotes] = useState(true)
   const [pollsReady, setPollsReady] = useState(false)
+  const [friendFeed, setFriendFeed] = useState<FeedActivity[]>([])
   const latestPollHydrationRequest = useRef(0)
   const supabase = createClient()
 
@@ -154,6 +156,19 @@ export default function HomePage() {
     }
 
     loadPolls()
+
+    async function loadFeed() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const res = await fetch('/api/friends?type=feed')
+      if (!res.ok) return
+      const json = await res.json()
+      const items: FeedActivity[] = (json.feed || [])
+        .filter((item: FeedActivity) => item.action_type === 'poll_vote')
+        .slice(0, 5)
+      setFriendFeed(items)
+    }
+    loadFeed()
   }, [])
 
   useEffect(() => {
@@ -220,7 +235,7 @@ export default function HomePage() {
           <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} onVote={handlePollVote} />
 
           <div className="grid gap-4 lg:hidden">
-            <FriendsCtaCard />
+            <FriendsCtaCard feed={friendFeed} />
             <PremiumCtaCard />
             <RankingCard />
             <TermometroCard />
@@ -229,7 +244,7 @@ export default function HomePage() {
         </main>
 
         <aside className="hidden space-y-5 lg:block lg:pt-0">
-          <FriendsCtaCard />
+          <FriendsCtaCard feed={friendFeed} />
           <PremiumCtaCard />
           <RankingCard />
           <TermometroCard />
@@ -491,7 +506,17 @@ function ComoFuncionaCard() {
   )
 }
 
-function FriendsCtaCard() {
+function timeAgo(date: string) {
+  const diff = Date.now() - new Date(date).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'agora'
+  if (mins < 60) return `${mins}min`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
+}
+
+function FriendsCtaCard({ feed }: { feed: FeedActivity[] }) {
   return (
     <section
       className="relative overflow-hidden rounded-[24px] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
@@ -505,16 +530,48 @@ function FriendsCtaCard() {
         </span>
         <div>
           <h3 className="text-[15px] font-[600] leading-none text-white">Atividade dos Amigos</h3>
-          <p className="mt-0.5 text-[13px] font-[400] text-white/40">Comparar opiniões</p>
+          <p className="mt-0.5 text-[13px] font-[400] text-white/40">Votos mais recentes</p>
         </div>
       </div>
-      <p className="mb-5 text-[15px] font-[400] leading-[1.6] text-white/50">Descubra com quem você concorda e compare opiniões em tempo real.</p>
+      {feed.length === 0 ? (
+        <p className="mb-5 text-[14px] font-[400] leading-[1.6] text-white/40">Nenhuma atividade dos amigos ainda.</p>
+      ) : (
+        <ul className="mb-5 space-y-3">
+          {feed.map(item => {
+            const name = item.profile?.full_name || item.profile?.username || 'Alguém'
+            const optionLabel = item.meta?.option_label as string | undefined
+            const pollQuestion = item.target_name
+            return (
+              <li key={item.id} className="flex items-start gap-2.5">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.10] text-[11px] font-[700] text-white">
+                  {name[0]?.toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-[500] leading-snug text-white/90">
+                    <span className="text-[#22C55E]">{name}</span>
+                    {' votou em '}
+                    {optionLabel ? (
+                      <span className="font-[600] text-white">&ldquo;{optionLabel}&rdquo;</span>
+                    ) : (
+                      <span className="font-[600] text-white">&ldquo;{pollQuestion}&rdquo;</span>
+                    )}
+                  </p>
+                  {optionLabel && pollQuestion && (
+                    <p className="mt-0.5 truncate text-[12px] font-[400] text-white/40">{pollQuestion}</p>
+                  )}
+                </div>
+                <span className="shrink-0 text-[11px] font-[400] text-white/30">{timeAgo(item.created_at)}</span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
       <Link
         href="/amigos"
-        className="flex h-[52px] items-center justify-center rounded-[16px] text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(34,197,94,0.35)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(34,197,94,0.45)] hover:-translate-y-[1px] active:scale-[0.98]"
+        className="flex h-[44px] items-center justify-center rounded-[14px] text-[13px] font-[600] text-white shadow-[0_4px_14px_rgba(34,197,94,0.35)] transition-all duration-200 hover:shadow-[0_6px_20px_rgba(34,197,94,0.45)] hover:-translate-y-[1px] active:scale-[0.98]"
         style={{ background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)' }}
       >
-        Ver atividade
+        Ver todos os amigos
       </Link>
     </section>
   )
