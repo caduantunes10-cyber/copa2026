@@ -71,7 +71,6 @@ function UserCard({
         <Avatar profile={profile} />
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-[#111827] truncate">{profile.full_name || profile.username}</div>
-          <div className="text-[11px] text-[#9CA3AF] font-medium">{profile.total_votes ?? 0} votos</div>
         </div>
       </div>
 
