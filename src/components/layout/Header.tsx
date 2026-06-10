@@ -30,7 +30,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#EAECF0] bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)]">
+    <header className="sticky top-0 z-40 shadow-[0_2px_16px_rgba(15,23,42,0.05)]" style={{ background: 'rgba(248,250,252,0.86)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(22,101,52,0.10)' }}>
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <span className="grid h-9 w-9 place-items-center rounded-[10px] border border-[#16C45B]/30 bg-[#F0FDF4] text-[#16C45B]">

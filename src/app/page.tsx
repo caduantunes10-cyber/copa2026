@@ -252,7 +252,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   const totalVotes = Object.values(results).reduce((sum, c) => sum + c, 0)
   const voted = votedPolls.has(poll.id)
   return (
-    <section className="group overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(0,0,0,0.10)] hover:-translate-y-[2px] sm:p-8 lg:min-h-[440px]">
+    <section className="group overflow-hidden rounded-[24px] p-6 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.12)] hover:-translate-y-[2px] sm:p-8 lg:min-h-[440px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(240,253,244,0.72) 100%)', border: '1px solid rgba(22,101,52,0.12)', boxShadow: '0 18px 45px rgba(15,23,42,0.08)', backdropFilter: 'blur(12px)' }}>
       <div className="mb-6 flex items-center justify-between">
         <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 text-[11px] font-bold uppercase tracking-wider text-[#16A34A]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
@@ -365,47 +365,45 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
   return (
-    <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05]">
-      <div className="border-b border-black/[0.05] px-6 py-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[18px] font-[700] text-[#0F172A]">Enquetes do dia</h2>
-          {pollsReady && !isHydratingVotes && polls.length > 0 && (
-            <span className="rounded-full bg-[#F0FDF4] px-2.5 py-1 text-[11px] font-bold text-[#16A34A]">{polls.length} ativas</span>
-          )}
-        </div>
+    <section className="overflow-hidden rounded-[32px] my-10" style={{ background: '#101722', padding: '32px' }}>
+      <div className="mb-6 flex items-center justify-between gap-2">
+        <h2 className="text-[24px] font-[700] tracking-[-0.02em] text-white">Enquetes do dia</h2>
+        {pollsReady && !isHydratingVotes && polls.length > 0 && (
+          <span className="text-[14px] font-[600] text-[#22C55E]">{polls.length} ativas</span>
+        )}
       </div>
-      <div className="p-4">
+      <div>
       {!pollsReady || isHydratingVotes ? (
-        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse rounded-[20px] bg-[#F8FAFC] p-4 ring-1 ring-black/[0.04]">
+            <div key={i} className="animate-pulse rounded-[20px] p-6 min-h-[240px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
               <div className="mb-3 flex items-start gap-3">
                 <div className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-200" />
                 <div className="flex-1 pt-1">
-                  <div className="mb-1.5 h-3 w-full rounded-full bg-slate-200" />
-                  <div className="h-3 w-3/5 rounded-full bg-slate-200" />
+                  <div className="mb-1.5 h-3 w-full rounded-full bg-white/10" />
+                  <div className="h-3 w-3/5 rounded-full bg-white/10" />
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="h-9 rounded-[12px] bg-slate-200" />
-                <div className="h-9 rounded-[12px] bg-slate-200" />
+                <div className="h-9 rounded-[12px] bg-white/10" />
+                <div className="h-9 rounded-[12px] bg-white/10" />
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
         {polls.map((poll) => (
-          <div key={poll.id} className="group/card rounded-[20px] bg-white p-4 ring-1 ring-black/[0.05] shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-3 transition-all duration-250 hover:shadow-[0_8px_24px_rgba(0,0,0,0.09)] hover:-translate-y-[3px]">
+          <div key={poll.id} className="group/card rounded-[20px] flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', padding: '24px', minHeight: '240px' }}>
             <div className="flex items-start gap-3">
               <div className="shrink-0 grid h-10 w-10 place-items-center rounded-[14px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">
                 <Activity className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2.2} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[14px] font-[700] leading-[1.4] text-[#0F172A]">{poll.question}</p>
+                  <p className="text-[16px] font-[600] leading-[1.4] text-[#0F172A]">{poll.question}</p>
                   {votedPolls.has(poll.id) && (
-                    <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 text-[10px] font-bold text-[#16A34A] ring-1 ring-[#BBF7D0]">
+                    <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold text-[#16A34A]" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.20)' }}>
                       <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       Votado
                     </span>
@@ -429,25 +427,21 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                           const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                           const selected = selectedPollOptions[poll.id] === optionIndex
                           return (
-                            <div key={`${poll.id}-${optionIndex}`} className={`flex h-9 flex-col justify-center rounded-[10px] px-3 text-[12px] ring-1 transition-all ${
-                              selected
-                                ? 'bg-[#F0FDF4] text-[#16A34A] ring-[#22C55E]/25 font-semibold'
-                                : 'bg-[#F8FAFC] text-[#374151] ring-black/[0.04] font-medium'
-                            }`}>
+                            <div key={`${poll.id}-${optionIndex}`} className="flex flex-col justify-center rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
                               <div className="flex items-center justify-between gap-2">
-                                <span className="truncate">{label}</span>
-                                <span className={`shrink-0 tabular-nums text-[11px] font-bold ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
+                                <span className="truncate text-[14px] font-[500] text-[#475569]">{label}</span>
+                                <span className="shrink-0 tabular-nums text-[13px] font-bold" style={{ color: selected ? '#16A34A' : '#64748B' }}>{percentage}%</span>
                               </div>
-                              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
                                 <div
-                                  className={`h-full rounded-full transition-all duration-500 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#3B82F6]/70'}`}
-                                  style={{ width: `${percentage}%` }}
+                                  className="h-full rounded-full transition-all duration-500"
+                                  style={{ width: `${percentage}%`, background: '#22C55E' }}
                                 />
                               </div>
                             </div>
                           )
                         })}
-                        <p className="text-[11px] text-[#667085]">{totalVotes.toLocaleString('pt-BR')} votos</p>
+                        <p className="text-[13px] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos</p>
                       </div>
                     )
                   })()
@@ -457,7 +451,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
                   const label = typeof option === 'string' ? option : option.label
                   return (
                     <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="flex h-9 w-full items-center rounded-[10px] bg-[#F8FAFC] px-3 text-left text-[12px] font-[500] text-[#374151] ring-1 ring-black/[0.04] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 active:scale-[0.99]">
+                      className="flex w-full items-center rounded-[10px] px-3 py-2.5 text-left text-[14px] font-[500] text-[#475569] transition-all duration-200 hover:text-[#0F172A] active:scale-[0.99]" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
                       {label}
                     </button>
                   )
@@ -469,7 +463,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
         </div>
       )}
       {pollsReady && !isHydratingVotes && polls.length === 0 && (
-        <p className="text-[12px] font-semibold text-[#9CA3AF] py-2">Nenhuma enquete ativa no momento.</p>
+        <p className="text-[13px] font-semibold text-white/40 py-2">Nenhuma enquete ativa no momento.</p>
       )}
       </div>
     </section>
@@ -560,8 +554,8 @@ function RankingCard() {
   ]
   return (
     <section
-      className="rounded-[20px] bg-white p-6"
-      style={{ border: '1px solid rgba(15,23,42,0.06)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}
+      className="rounded-[20px] p-6"
+      style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(240,253,244,0.70) 100%)', border: '1px solid rgba(22,101,52,0.10)', boxShadow: '0 8px 24px rgba(15,23,42,0.06)', backdropFilter: 'blur(12px)' }}
     >
       <div className="mb-4 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(34,197,94,0.10)' }}>
@@ -621,8 +615,8 @@ function EstatisticasCard() {
   ]
   return (
     <section
-      className="rounded-[20px] bg-white p-6"
-      style={{ border: '1px solid rgba(15,23,42,0.06)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}
+      className="rounded-[20px] p-6"
+      style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(240,253,244,0.70) 100%)', border: '1px solid rgba(22,101,52,0.10)', boxShadow: '0 8px 24px rgba(15,23,42,0.06)', backdropFilter: 'blur(12px)' }}
     >
       <div className="mb-4 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(37,99,235,0.08)' }}>

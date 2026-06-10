@@ -25,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.className} min-h-screen text-[#0F172A] antialiased`} style={{ background: 'linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%)' }}>
+      <body className={`${inter.className} min-h-screen text-[#0F172A] antialiased`} style={{ background: 'radial-gradient(circle at top left, rgba(22,101,52,0.18), transparent 32%), radial-gradient(circle at top right, rgba(15,23,42,0.10), transparent 28%), linear-gradient(180deg, #EAF3EE 0%, #DDE8E2 100%)' }}>
         <Header />
         <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8">
           {children}
