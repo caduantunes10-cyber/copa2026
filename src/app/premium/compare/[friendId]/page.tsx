@@ -203,142 +203,126 @@ function ComparisonView({
   const [showAgreements, setShowAgreements] = useState(false)
   const [showDifferences, setShowDifferences] = useState(false)
 
+  const card = "rounded-[24px] bg-white px-6 py-6 ring-1 ring-[#E2E8F0]"
+
   return (
     <div className="space-y-4 pb-28">
 
       {/* Back nav */}
-      <button onClick={onBack} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-black text-[#6B7280] hover:bg-white hover:text-[#111827] transition">
+      <button onClick={onBack} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold text-[#64748B] hover:text-[#0F172A] transition">
         <ArrowLeft className="h-3.5 w-3.5" /> Voltar
       </button>
 
-      {/* Score hero */}
-      <section className={`relative overflow-hidden rounded-[28px] bg-gradient-to-br ${scoreColors.bg} p-6 ring-1 ${scoreColors.ring} text-center sm:p-8`}>
-        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-black/[0.03]" />
-        <div className="relative">
-          <div className="mb-1 text-[11px] font-black uppercase tracking-[0.08em] text-[#6B7280]">Compatibilidade de opiniões</div>
-          <div className={`text-7xl font-black tracking-[-0.05em] sm:text-8xl ${scoreColors.text}`}>
-            {compatibility_score}%
-          </div>
-          <div className={`mt-3 inline-flex items-center gap-1.5 rounded-2xl px-4 py-1.5 text-[12px] font-black ${scoreColors.text} bg-white/60 ring-1 ${scoreColors.ring}`}>
-            {getCompatibilityLabel(compatibility_score)}
-          </div>
-          {limitedData && (
-            <p className="mt-3 text-[11px] font-semibold text-[#F59E0B]">Baseado em dados parciais</p>
-          )}
+      {/* Hero */}
+      <section className="rounded-[32px] bg-white px-8 py-10 text-center ring-1 ring-[#E2E8F0]" style={{ boxShadow: '0 2px 16px rgba(15,23,42,0.06)' }}>
+        <div className="mb-1 text-[13px] font-[500] tracking-[-0.01em] text-[#64748B]">Compatibilidade de opiniões</div>
+        <div className="mt-2 text-[72px] font-[700] leading-none tracking-[-0.05em] text-[#0F172A]">
+          {compatibility_score}%
         </div>
+        <div className="mt-3 text-[20px] font-[600] tracking-[-0.02em] text-[#5B2FE5]">
+          {getCompatibilityLabel(compatibility_score)}
+        </div>
+        <div className="mt-2 text-[16px] font-[400] text-[#64748B]">
+          {summary.total_compared} opiniões comparadas
+        </div>
+        {limitedData && (
+          <div className="mt-3 text-[12px] font-[500] text-[#94A3B8]">Baseado em dados parciais</div>
+        )}
       </section>
 
-      {/* Friend profile + premium summary */}
-      <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
-        <div className="flex min-w-0 items-center gap-3 border-b border-slate-100 pb-4">
+      {/* Friend header */}
+      <section className={card}>
+        <div className="flex min-w-0 items-center gap-4">
           {friend_profile.avatar_url ? (
             <img src={friend_profile.avatar_url} alt={friend_profile.username} className="h-12 w-12 shrink-0 rounded-full object-cover" />
           ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6C3BFF] to-[#16C45B] text-[15px] font-black text-white">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F1EDFF] text-[15px] font-[700] text-[#5B2FE5]">
               {friend_profile.username?.[0]?.toUpperCase() || 'U'}
             </div>
           )}
-          <div className="min-w-0">
-            <div className="truncate text-[14px] font-black text-[#111827]">{friend_profile.username}</div>
-            <div className="mt-0.5 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="truncate text-[17px] font-[600] tracking-[-0.02em] text-[#0F172A]">{friend_profile.username}</span>
               {friend_profile.is_premium && (
-                <span className="inline-flex items-center rounded-full bg-[#6C3BFF]/10 px-2 py-0.5 text-[10px] font-black text-[#6C3BFF]">Premium</span>
+                <span className="shrink-0 rounded-full bg-[#F1EDFF] px-2 py-0.5 text-[10px] font-[700] text-[#5B2FE5]">Premium</span>
               )}
-              <span className="text-[11px] font-medium text-[#9CA3AF]">{summary.total_compared} enquetes comparadas</span>
             </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2 pt-4 text-center">
-          <div>
-            <div className="text-3xl font-black tracking-[-0.03em] text-[#111827]">{summary.total_compared}</div>
-            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Total</div>
-          </div>
-          <div>
-            <div className="text-3xl font-black tracking-[-0.03em] text-[#16C45B]">{summary.agreements}</div>
-            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Iguais</div>
-          </div>
-          <div>
-            <div className="text-3xl font-black tracking-[-0.03em] text-[#EF4444]">{summary.differences}</div>
-            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Diferentes</div>
+            <div className="mt-1 text-[13px] font-[400] text-[#64748B]">
+              {summary.total_compared} comparadas · {summary.agreements} iguais · {summary.differences} diferentes
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Placar da amizade */}
+      {/* Scoreboard */}
       {summary.total_compared > 0 && (
-        <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <Swords className="h-4 w-4 text-[#6C3BFF]" strokeWidth={2.2} />
-            <h3 className="text-[13px] font-black text-[#111827]">Placar da amizade</h3>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-[#F0FDF4] px-4 py-3 text-center ring-1 ring-[#16C45B]/15">
-              <div className="text-2xl font-black tracking-tight text-[#16C45B]">{summary.agreements}</div>
-              <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[#16C45B]/70">concordâncias</div>
+        <section className={`${card} text-center`}>
+          <div className="mb-1 text-[13px] font-[500] text-[#64748B]">Placar da amizade</div>
+          <div className="mt-3 flex items-center justify-center gap-4">
+            <div>
+              <div className="text-[48px] font-[700] leading-none tracking-[-0.04em] text-[#0F172A]">{summary.agreements}</div>
+              <div className="mt-1 text-[12px] font-[500] text-[#64748B]">concordâncias</div>
             </div>
-            <div className="rounded-xl bg-[#FFF5F5] px-4 py-3 text-center ring-1 ring-[#EF4444]/15">
-              <div className="text-2xl font-black tracking-tight text-[#EF4444]">{summary.differences}</div>
-              <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[#EF4444]/70">divergências</div>
+            <div className="text-[32px] font-[300] text-[#CBD5E1]">—</div>
+            <div>
+              <div className="text-[48px] font-[700] leading-none tracking-[-0.04em] text-[#0F172A]">{summary.differences}</div>
+              <div className="mt-1 text-[12px] font-[500] text-[#64748B]">divergências</div>
             </div>
           </div>
-          <p className="mt-3 text-center text-[12px] font-bold text-[#6B7280]">{placarLabel}</p>
+          <div className="mt-4 text-[16px] font-[400] text-[#64748B]">{placarLabel}</div>
         </section>
       )}
 
       {/* Maior conexão */}
       {topAgreement && (
-        <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <Heart className="h-4 w-4 text-[#16C45B]" strokeWidth={2.2} />
-            <h3 className="text-[13px] font-black text-[#111827]">Maior conexão</h3>
-          </div>
-          <div className="rounded-xl bg-[#F0FDF4] px-4 py-3 ring-1 ring-[#16C45B]/15">
-            <div className="text-[11px] font-semibold text-[#6B7280]">{topAgreement.question}</div>
-            <div className="mt-1.5 text-[12px] font-black text-[#16C45B]">Ambos: {topAgreement.option_text}</div>
-          </div>
+        <section className={card}>
+          <div className="mb-4 text-[20px] font-[700] tracking-[-0.02em] text-[#0F172A]">❤️ Maior conexão</div>
+          <div className="text-[16px] font-[500] leading-snug text-[#64748B]">{topAgreement.question}</div>
+          <div className="mt-3 text-[18px] font-[600] leading-snug tracking-[-0.01em] text-[#0F172A]">{topAgreement.option_text}</div>
+          <div className="mt-1 text-[13px] font-[400] text-[#94A3B8]">Vocês dois escolheram esta opção</div>
         </section>
       )}
 
       {/* Maior batalha */}
       {topDifference && (
-        <section className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/[0.04] shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <Flame className="h-4 w-4 text-[#F59E0B]" strokeWidth={2.2} />
-            <h3 className="text-[13px] font-black text-[#111827]">Maior batalha</h3>
-          </div>
-          <div className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
-            <div className="text-[11px] font-semibold text-[#6B7280]">{topDifference.question}</div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
-                <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
-                <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{topDifference.user_option_text}</div>
-              </div>
-              <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
-                <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
-                <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{topDifference.friend_option_text}</div>
-              </div>
+        <section className={card}>
+          <div className="mb-4 text-[20px] font-[700] tracking-[-0.02em] text-[#0F172A]">🔥 Maior batalha</div>
+          <div className="text-[16px] font-[500] leading-snug text-[#64748B]">{topDifference.question}</div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <div className="mb-1.5 text-[11px] font-[600] uppercase tracking-wide text-[#5B2FE5]">Você</div>
+              <div className="text-[15px] font-[600] leading-snug text-[#0F172A]">{topDifference.user_option_text}</div>
+            </div>
+            <div>
+              <div className="mb-1.5 truncate text-[11px] font-[600] uppercase tracking-wide text-[#94A3B8]">{friend_profile.username}</div>
+              <div className="text-[15px] font-[600] leading-snug text-[#0F172A]">{topDifference.friend_option_text}</div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Collapsible: Agreements */}
+      {/* Accordion: Agreements */}
       {agreements.length > 0 && (
-        <section className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-sm overflow-hidden">
+        <section className="rounded-[24px] bg-white ring-1 ring-[#E2E8F0] overflow-hidden">
           <button
             onClick={() => setShowAgreements(v => !v)}
-            className="flex w-full items-center gap-2 px-5 py-4 text-left"
+            className="flex w-full items-center gap-3 px-6 py-5 text-left transition hover:bg-[#FAFAFA]"
           >
-            <span className="text-base">❤️</span>
-            <span className="flex-1 text-[13px] font-black text-[#111827]">Ver concordâncias ({agreements.length})</span>
-            {showAgreements ? <ChevronUp className="h-4 w-4 text-[#9CA3AF]" /> : <ChevronDown className="h-4 w-4 text-[#9CA3AF]" />}
+            <span className="text-[16px]">❤️</span>
+            <span className="flex-1 text-[15px] font-[600] tracking-[-0.01em] text-[#0F172A]">
+              Ver concordâncias
+              <span className="ml-2 text-[13px] font-[400] text-[#94A3B8]">{agreements.length}</span>
+            </span>
+            {showAgreements
+              ? <ChevronUp className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+              : <ChevronDown className="h-4 w-4 shrink-0 text-[#94A3B8]" />}
           </button>
           {showAgreements && (
-            <div className="space-y-2 px-5 pb-4">
+            <div className="divide-y divide-[#F1F5F9] border-t border-[#F1F5F9]">
               {agreements.map((agreement) => (
-                <div key={agreement.poll_id} className="rounded-xl bg-[#F0FDF4] px-4 py-3 ring-1 ring-[#16C45B]/15">
-                  <div className="text-[11px] font-semibold text-[#6B7280]">{agreement.question}</div>
-                  <div className="mt-1 text-[12px] font-black text-[#16C45B]">Ambos: {agreement.option_text}</div>
+                <div key={agreement.poll_id} className="px-6 py-4">
+                  <div className="text-[13px] font-[400] text-[#64748B]">{agreement.question}</div>
+                  <div className="mt-1.5 text-[15px] font-[600] text-[#0F172A]">{agreement.option_text}</div>
                 </div>
               ))}
             </div>
@@ -346,30 +330,35 @@ function ComparisonView({
         </section>
       )}
 
-      {/* Collapsible: Differences */}
+      {/* Accordion: Differences */}
       {differences.length > 0 && (
-        <section className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-sm overflow-hidden">
+        <section className="rounded-[24px] bg-white ring-1 ring-[#E2E8F0] overflow-hidden">
           <button
             onClick={() => setShowDifferences(v => !v)}
-            className="flex w-full items-center gap-2 px-5 py-4 text-left"
+            className="flex w-full items-center gap-3 px-6 py-5 text-left transition hover:bg-[#FAFAFA]"
           >
-            <span className="text-base">🔥</span>
-            <span className="flex-1 text-[13px] font-black text-[#111827]">Ver divergências ({differences.length})</span>
-            {showDifferences ? <ChevronUp className="h-4 w-4 text-[#9CA3AF]" /> : <ChevronDown className="h-4 w-4 text-[#9CA3AF]" />}
+            <span className="text-[16px]">🔥</span>
+            <span className="flex-1 text-[15px] font-[600] tracking-[-0.01em] text-[#0F172A]">
+              Ver divergências
+              <span className="ml-2 text-[13px] font-[400] text-[#94A3B8]">{differences.length}</span>
+            </span>
+            {showDifferences
+              ? <ChevronUp className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+              : <ChevronDown className="h-4 w-4 shrink-0 text-[#94A3B8]" />}
           </button>
           {showDifferences && (
-            <div className="space-y-2 px-5 pb-4">
+            <div className="divide-y divide-[#F1F5F9] border-t border-[#F1F5F9]">
               {differences.map((difference) => (
-                <div key={difference.poll_id} className="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-black/[0.04]">
-                  <div className="text-[11px] font-semibold text-[#6B7280]">{difference.question}</div>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-[#6C3BFF]/20">
-                      <div className="text-[9px] font-black uppercase tracking-wide text-[#6C3BFF]">Você</div>
-                      <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.user_option_text}</div>
+                <div key={difference.poll_id} className="px-6 py-4">
+                  <div className="text-[13px] font-[400] text-[#64748B]">{difference.question}</div>
+                  <div className="mt-3 grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="mb-1 text-[11px] font-[600] uppercase tracking-wide text-[#5B2FE5]">Você</div>
+                      <div className="text-[14px] font-[600] leading-snug text-[#0F172A]">{difference.user_option_text}</div>
                     </div>
-                    <div className="min-w-0 overflow-hidden rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
-                      <div className="truncate text-[9px] font-black uppercase tracking-wide text-[#9CA3AF]">{friend_profile.username}</div>
-                      <div className="mt-0.5 break-words text-[11px] font-bold text-[#111827]">{difference.friend_option_text}</div>
+                    <div>
+                      <div className="mb-1 truncate text-[11px] font-[600] uppercase tracking-wide text-[#94A3B8]">{friend_profile.username}</div>
+                      <div className="text-[14px] font-[600] leading-snug text-[#0F172A]">{difference.friend_option_text}</div>
                     </div>
                   </div>
                 </div>
@@ -381,13 +370,16 @@ function ComparisonView({
 
       {/* No data */}
       {agreements.length === 0 && differences.length === 0 && (
-        <section className="rounded-2xl bg-white px-5 py-10 ring-1 ring-black/[0.04] shadow-sm text-center">
-          <Users className="h-10 w-10 mx-auto mb-4 text-slate-300" />
-          <h3 className="text-[14px] font-black text-[#111827]">Sem dados para comparar</h3>
-          <p className="mt-2 text-[12px] font-medium text-[#9CA3AF]">
+        <section className="rounded-[24px] bg-white px-6 py-12 ring-1 ring-[#E2E8F0] text-center">
+          <Users className="h-10 w-10 mx-auto mb-4 text-[#CBD5E1]" />
+          <h3 className="text-[17px] font-[600] tracking-[-0.02em] text-[#0F172A]">Sem dados para comparar</h3>
+          <p className="mt-2 text-[15px] font-[400] text-[#64748B]">
             {summary.message || 'Vocês ainda não votaram nas mesmas enquetes.'}
           </p>
-          <button className="mt-5 rounded-2xl bg-[#6C3BFF] px-5 py-2.5 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_10px_24px_rgba(108,59,255,0.24)] hover:bg-[#5B2FE5] transition" onClick={onGoHome}>
+          <button
+            className="mt-6 rounded-full bg-[#5B2FE5] px-6 py-3 text-[14px] font-[600] text-white transition hover:bg-[#4c27c4] active:scale-[0.98]"
+            onClick={onGoHome}
+          >
             Votar em Enquetes
           </button>
         </section>
