@@ -368,6 +368,82 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   )
 }
 
+function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, resultsLoading, onVote }: {
+  poll: HomePoll
+  votedPolls: Set<string>
+  selectedPollOptions: SelectedPollOptions
+  pollResults: PollResults
+  resultsLoading: Set<string>
+  onVote: (poll: HomePoll, optionIndex: number) => void
+}) {
+  return (
+    <>
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 grid h-9 w-9 place-items-center rounded-[12px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)]" aria-hidden="true">
+          <Activity className="h-[16px] w-[16px] text-[#16A34A]" strokeWidth={2.2} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[15px] font-[600] leading-[1.35] text-[#0F172A]">{poll.question}</p>
+            {votedPolls.has(poll.id) && (
+              <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold text-[#16A34A]" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.20)' }}>
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Votado
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-1.5">
+        {votedPolls.has(poll.id) ? (
+          resultsLoading.has(poll.id) ? (
+            <p className="rounded-[10px] bg-[#F4F6F8] px-3 py-2 text-[11px] text-[#667085]">Carregando resultados...</p>
+          ) : (
+            (() => {
+              const results = pollResults[poll.id] || {}
+              const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0)
+              return (
+                <div className="space-y-1.5">
+                  {poll.options.map((option, optionIndex) => {
+                    const label = typeof option === 'string' ? option : option.label
+                    const count = results[optionIndex] || 0
+                    const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
+                    const selected = selectedPollOptions[poll.id] === optionIndex
+                    return (
+                      <div key={`${poll.id}-${optionIndex}`} className="w-full max-w-full min-w-0 overflow-hidden rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
+                        <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_48px] items-center gap-2">
+                          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-[500] text-[#475569]">{label}</span>
+                          <span className="w-12 shrink-0 text-right tabular-nums text-[13px] font-bold" style={{ color: selected ? '#16A34A' : '#64748B' }}>{percentage}%</span>
+                        </div>
+                        <div className="mt-1.5 w-full max-w-full overflow-hidden">
+                          <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
+                            <div className="h-full max-w-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, background: '#22C55E' }} />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  <p className="text-[13px] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos</p>
+                </div>
+              )
+            })()
+          )
+        ) : (
+          poll.options.map((option, optionIndex) => {
+            const label = typeof option === 'string' ? option : option.label
+            return (
+              <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
+                className="flex w-full min-w-0 items-center overflow-hidden rounded-[10px] px-3 py-2.5 text-left text-[14px] font-[500] text-[#475569] transition-all duration-200 hover:text-[#0F172A] active:scale-[0.99]" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
+                {label}
+              </button>
+            )
+          })
+        )}
+      </div>
+    </>
+  )
+}
+
 function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, onVote }: {
   polls: HomePoll[]
   votedPolls: Set<string>
@@ -383,103 +459,71 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
 
   return (
     <section className="overflow-hidden my-10 rounded-[24px] px-[18px] py-[18px] pb-[110px] md:rounded-[32px] md:p-[32px] md:pb-[32px]" style={{ background: '#101722' }}>
-      <div className="mb-6 flex items-center justify-between gap-2">
+      <div className="mb-1 flex items-center justify-between gap-2">
         <h2 className="text-[24px] font-[700] tracking-[-0.02em] text-white">Enquetes do dia</h2>
         {pollsReady && !isHydratingVotes && polls.length > 0 && (
           <span className="text-[14px] font-[600] text-[#22C55E]">{polls.length} ativas</span>
         )}
       </div>
+      <p className="mb-5 text-[13px] text-white/55 md:hidden">Deslize para ver mais enquetes</p>
+      <div className="hidden md:block mb-5" />
       <div>
       {!pollsReady || isHydratingVotes ? (
-        <div className="grid gap-4 grid-cols-1 md:gap-6 md:grid-cols-2">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse rounded-[18px] p-[18px] md:rounded-[20px] md:p-6 min-h-[180px] md:min-h-[240px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <div className="mb-3 flex items-start gap-3">
-                <div className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-200" />
-                <div className="flex-1 pt-1">
-                  <div className="mb-1.5 h-3 w-full rounded-full bg-white/10" />
-                  <div className="h-3 w-3/5 rounded-full bg-white/10" />
+        <>
+          <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2 md:hidden">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="animate-pulse shrink-0 w-[86vw] max-w-[360px] rounded-[22px] p-[18px] min-h-[180px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="mb-3 flex items-start gap-3">
+                  <div className="h-9 w-9 shrink-0 rounded-[12px] bg-white/10" />
+                  <div className="flex-1 pt-1">
+                    <div className="mb-1.5 h-3 w-full rounded-full bg-white/10" />
+                    <div className="h-3 w-3/5 rounded-full bg-white/10" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-9 rounded-[12px] bg-white/10" />
+                  <div className="h-9 rounded-[12px] bg-white/10" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="h-9 rounded-[12px] bg-white/10" />
-                <div className="h-9 rounded-[12px] bg-white/10" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 grid-cols-1 md:gap-6 md:grid-cols-2">
-        {polls.map((poll) => (
-          <div key={poll.id} className="group/card flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1 rounded-[22px] p-[18px] md:rounded-[20px] md:p-[24px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)', minHeight: 'auto' }}>
-            <div className="flex items-start gap-3">
-              <div className="shrink-0 grid h-9 w-9 place-items-center rounded-[12px] bg-gradient-to-br from-[#DCFCE7] to-[#ECFDF5] shadow-[0_1px_3px_rgba(34,197,94,0.15)] md:h-10 md:w-10 md:rounded-[14px]" aria-hidden="true">
-                <Activity className="h-[16px] w-[16px] text-[#16A34A] md:h-[18px] md:w-[18px]" strokeWidth={2.2} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-[15px] font-[600] leading-[1.35] text-[#0F172A] md:text-[16px] md:leading-[1.4]">{poll.question}</p>
-                  {votedPolls.has(poll.id) && (
-                    <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold text-[#16A34A]" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.20)' }}>
-                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Votado
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="grid gap-1.5">
-              {votedPolls.has(poll.id) ? (
-                resultsLoading.has(poll.id) ? (
-                  <p className="rounded-[10px] bg-[#F4F6F8] px-3 py-2 text-[11px] text-[#667085]">Carregando resultados...</p>
-                ) : (
-                  (() => {
-                    const results = pollResults[poll.id] || {}
-                    const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0)
-                    return (
-                      <div className="space-y-1.5">
-                        {poll.options.map((option, optionIndex) => {
-                          const label = typeof option === 'string' ? option : option.label
-                          const count = results[optionIndex] || 0
-                          const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
-                          const selected = selectedPollOptions[poll.id] === optionIndex
-                          return (
-                            <div key={`${poll.id}-${optionIndex}`} className="w-full max-w-full min-w-0 overflow-hidden rounded-[10px] px-3 py-2 transition-all" style={{ background: selected ? 'rgba(34,197,94,0.08)' : '#F8FAFC', border: selected ? '1px solid rgba(34,197,94,0.20)' : '1px solid transparent' }}>
-                              <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_48px] items-center gap-2">
-                                <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-[500] text-[#475569]">{label}</span>
-                                <span className="w-12 shrink-0 text-right tabular-nums text-[13px] font-bold" style={{ color: selected ? '#16A34A' : '#64748B' }}>{percentage}%</span>
-                              </div>
-                              <div className="mt-1.5 w-full max-w-full overflow-hidden">
-                                <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#E5E7EB' }}>
-                                  <div
-                                    className="h-full max-w-full rounded-full transition-all duration-500"
-                                    style={{ width: `${percentage}%`, background: '#22C55E' }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                        <p className="text-[13px] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos</p>
-                      </div>
-                    )
-                  })()
-                )
-              ) : (
-                poll.options.map((option, optionIndex) => {
-                  const label = typeof option === 'string' ? option : option.label
-                  return (
-                    <button key={`${poll.id}-${optionIndex}`} onClick={() => onVote(poll, optionIndex)}
-                      className="flex w-full min-w-0 items-center overflow-hidden rounded-[10px] px-3 py-2.5 text-left text-[14px] font-[500] text-[#475569] transition-all duration-200 hover:text-[#0F172A] active:scale-[0.99]" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                      {label}
-                    </button>
-                  )
-                })
-              )}
-            </div>
+            ))}
           </div>
-        ))}
-        </div>
+          <div className="hidden md:grid gap-6 grid-cols-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="animate-pulse rounded-[20px] p-6 min-h-[240px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="mb-3 flex items-start gap-3">
+                  <div className="h-10 w-10 shrink-0 rounded-[14px] bg-white/10" />
+                  <div className="flex-1 pt-1">
+                    <div className="mb-1.5 h-3 w-full rounded-full bg-white/10" />
+                    <div className="h-3 w-3/5 rounded-full bg-white/10" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-9 rounded-[12px] bg-white/10" />
+                  <div className="h-9 rounded-[12px] bg-white/10" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Mobile: horizontal snap carousel */}
+          <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:hidden">
+            {polls.map((poll) => (
+              <div key={poll.id} className="snap-start shrink-0 w-[86vw] max-w-[360px] flex flex-col gap-3 rounded-[22px] p-[18px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
+                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
+              </div>
+            ))}
+          </div>
+          {/* Desktop: grid */}
+          <div className="hidden md:grid gap-6 grid-cols-2">
+            {polls.map((poll) => (
+              <div key={poll.id} className="group/card flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1 rounded-[20px] p-[24px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
+                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
+              </div>
+            ))}
+          </div>
+        </>
       )}
       {pollsReady && !isHydratingVotes && polls.length === 0 && (
         <p className="text-[13px] font-semibold text-white/40 py-2">Nenhuma enquete ativa no momento.</p>
