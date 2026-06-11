@@ -530,7 +530,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
             className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:hidden"
           >
             {polls.map((poll) => (
-              <div key={poll.id} className="snap-start shrink-0 w-[90vw] max-w-[360px] flex flex-col gap-3 rounded-[22px] p-[18px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
+              <div key={poll.id} className="snap-start shrink-0 w-[86vw] max-w-[360px] flex flex-col gap-3 rounded-[22px] p-[18px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
                 <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
               </div>
             ))}
