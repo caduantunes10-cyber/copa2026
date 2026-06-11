@@ -454,6 +454,17 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   pollsReady: boolean
   onVote: (poll: HomePoll, optionIndex: number) => void
 }) {
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const handleScroll = () => {
+    const el = carouselRef.current
+    if (!el || polls.length === 0) return
+    const cardWidth = el.scrollWidth / polls.length
+    const index = Math.round(el.scrollLeft / cardWidth)
+    setActiveIndex(Math.min(index, polls.length - 1))
+  }
+
   console.log('[Home polls] DailyPollsCard render polls.length:', polls.length)
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
@@ -461,9 +472,14 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
     <section className="overflow-hidden my-10 rounded-[24px] px-[18px] py-[18px] pb-[110px] md:rounded-[32px] md:p-[32px] md:pb-[32px]" style={{ background: '#101722' }}>
       <div className="mb-1 flex items-center justify-between gap-2">
         <h2 className="text-[24px] font-[700] tracking-[-0.02em] text-white">Enquetes do dia</h2>
-        {pollsReady && !isHydratingVotes && polls.length > 0 && (
-          <span className="text-[14px] font-[600] text-[#22C55E]">{polls.length} ativas</span>
-        )}
+        <div className="flex items-center gap-2">
+          {pollsReady && !isHydratingVotes && polls.length > 0 && (
+            <span className="text-[14px] font-[600] text-[#22C55E]">{polls.length} ativas</span>
+          )}
+          {pollsReady && !isHydratingVotes && polls.length > 1 && (
+            <span className="md:hidden text-[18px] font-[300] leading-none text-white/40" aria-hidden="true">›</span>
+          )}
+        </div>
       </div>
       <p className="mb-5 text-[13px] text-white/55 md:hidden">Deslize para ver mais enquetes</p>
       <div className="hidden md:block mb-5" />
@@ -508,13 +524,34 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       ) : (
         <>
           {/* Mobile: horizontal snap carousel */}
-          <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:hidden">
+          <div
+            ref={carouselRef}
+            onScroll={handleScroll}
+            className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:hidden"
+          >
             {polls.map((poll) => (
               <div key={poll.id} className="snap-start shrink-0 w-[86vw] max-w-[360px] flex flex-col gap-3 rounded-[22px] p-[18px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
                 <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
               </div>
             ))}
           </div>
+          {/* Mobile: pagination dots */}
+          {polls.length > 1 && (
+            <div className="mt-4 flex justify-center gap-[6px] md:hidden" aria-hidden="true">
+              {polls.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: i === activeIndex ? 18 : 6,
+                    height: 6,
+                    borderRadius: 99,
+                    background: i === activeIndex ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.22)',
+                    transition: 'width 0.25s ease, background 0.25s ease',
+                  }}
+                />
+              ))}
+            </div>
+          )}
           {/* Desktop: grid */}
           <div className="hidden md:grid gap-6 grid-cols-2">
             {polls.map((poll) => (
