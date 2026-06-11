@@ -384,6 +384,7 @@ export default function HomePage() {
   const [pollsReady, setPollsReady] = useState(false)
   const [friendFeed, setFriendFeed] = useState<FeedActivity[]>([])
   const [userId, setUserId] = useState<string | null>(null)
+  const [lastVotedPollId, setLastVotedPollId] = useState<string | null>(null)
   const latestPollHydrationRequest = useRef(0)
   const supabase = createClient()
 
@@ -527,6 +528,7 @@ export default function HomePage() {
     console.log('[Home poll vote] insert error:', error)
 
     if (!error || error.code === '23505') {
+      setLastVotedPollId(poll.id)
       setVotedPolls(prev => new Set([...prev, poll.id]))
       setSelectedPollOptions(prev => ({ ...prev, [poll.id]: optionIndex }))
       setPollResults(prev => ({
@@ -553,9 +555,9 @@ export default function HomePage() {
           <HeroSection />
           <TodayInsightsSection insights={insights} loading={!pollsReady || isHydratingVotes} />
           {featuredPoll && (
-            <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} onVote={handlePollVote} />
+            <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={handlePollVote} />
           )}
-          <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} onVote={handlePollVote} />
+          <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={handlePollVote} />
 
           <div className="grid gap-4 lg:hidden">
             <FriendsCtaCard feed={friendFeed} />
@@ -579,11 +581,13 @@ export default function HomePage() {
   )
 }
 
-function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, onVote }: {
+function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, friendFeed, lastVotedPollId, onVote }: {
   poll: HomePoll
   votedPolls: Set<string>
   selectedPollOptions: SelectedPollOptions
   pollResults: PollResults
+  friendFeed: FeedActivity[]
+  lastVotedPollId: string | null
   onVote: (poll: HomePoll, optionIndex: number) => void
 }) {
   const results = pollResults[poll.id] || {}
@@ -685,18 +689,122 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
           {voted && totalVotes > 0 && (
             <p className="mt-3 text-[13px] font-[400] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
           )}
+          <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} lastVotedPollId={lastVotedPollId} />
         </div>
       </div>
     </section>
   )
 }
 
-function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, resultsLoading, onVote }: {
+// ─── Post-vote social discovery card ─────────────────────────────────────────
+
+function PostVoteSocialCard({
+  pollId,
+  friendFeed,
+  selectedPollOptions,
+  lastVotedPollId,
+}: {
+  pollId: string
+  friendFeed: FeedActivity[]
+  selectedPollOptions: SelectedPollOptions
+  lastVotedPollId: string | null
+}) {
+  // Only show on the poll the user just voted on
+  if (pollId !== lastVotedPollId) return null
+  const myOption = selectedPollOptions[pollId]
+  if (myOption === undefined) return null
+
+  const match = friendFeed.find(
+    f => f.action_type === 'poll_vote' && f.target_id === pollId && f.meta !== null
+  )
+
+  let title: string
+  let body: string
+  let supporting: string
+  let cta: string
+  let href: string
+  let accentColor: string
+  let accentBg: string
+  let borderColor: string
+
+  if (match) {
+    const friendOption = (match.meta as Record<string, unknown>)?.option_index
+    const name = match.profile?.full_name || match.profile?.username || 'Um amigo'
+    if (Number(friendOption) === myOption) {
+      title = 'Vocês chegaram à mesma conclusão.'
+      body = `${name} escolheu exatamente a mesma resposta.`
+      supporting = 'Talvez vocês pensem mais parecido do que imaginam.'
+      cta = 'Ver compatibilidade'
+      href = `/premium/compare/${match.user_id}`
+      accentColor = '#15803D'
+      accentBg = 'rgba(240,253,244,0.80)'
+      borderColor = 'rgba(34,197,94,0.20)'
+    } else {
+      title = 'Vocês escolheram lados opostos.'
+      body = `${name} acredita em algo diferente nesta discussão.`
+      supporting = 'Essa pode ser uma das maiores divergências entre vocês.'
+      cta = 'Comparar opiniões'
+      href = `/premium/compare/${match.user_id}`
+      accentColor = '#B91C1C'
+      accentBg = 'rgba(254,242,242,0.85)'
+      borderColor = 'rgba(239,68,68,0.18)'
+    }
+  } else {
+    title = 'Ainda não há comparação disponível.'
+    body = 'Convide amigos e descubra quem realmente pensa como você.'
+    supporting = ''
+    cta = 'Encontrar amigos'
+    href = '/amigos'
+    accentColor = '#374151'
+    accentBg = 'rgba(248,250,252,0.90)'
+    borderColor = 'rgba(226,232,240,0.90)'
+  }
+
+  return (
+    <Link href={href} className="block no-underline">
+      <div
+        className="mt-4 overflow-hidden rounded-[18px] transition-all duration-200 hover:shadow-[0_8px_24px_rgba(15,23,42,0.10)] hover:-translate-y-[1px] active:scale-[0.99]"
+        style={{
+          background: accentBg,
+          border: `1px solid ${borderColor}`,
+          borderLeft: `3px solid ${accentColor}`,
+        }}
+      >
+        <div className="px-5 py-4">
+          <p className="text-[15px] font-[800] leading-[1.25] tracking-[-0.025em] text-[#0F172A]">
+            {title}
+          </p>
+          <p className="mt-1.5 text-[13px] font-[400] leading-[1.55] text-[#334155]">
+            {body}
+          </p>
+          {supporting && (
+            <p className="mt-1 text-[12px] font-[400] leading-[1.5] text-[#64748B]">
+              {supporting}
+            </p>
+          )}
+          <div
+            className="mt-4 inline-flex items-center gap-1 text-[13px] font-[700] tracking-[-0.01em]"
+            style={{ color: accentColor }}
+          >
+            {cta}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, resultsLoading, friendFeed, lastVotedPollId, onVote }: {
   poll: HomePoll
   votedPolls: Set<string>
   selectedPollOptions: SelectedPollOptions
   pollResults: PollResults
   resultsLoading: Set<string>
+  friendFeed: FeedActivity[]
+  lastVotedPollId: string | null
   onVote: (poll: HomePoll, optionIndex: number) => void
 }) {
   return (
@@ -747,6 +855,7 @@ function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, res
                     )
                   })}
                   <p className="text-[13px] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos</p>
+                  <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} lastVotedPollId={lastVotedPollId} />
                 </div>
               )
             })()
@@ -767,7 +876,7 @@ function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, res
   )
 }
 
-function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, onVote }: {
+function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, friendFeed, lastVotedPollId, onVote }: {
   polls: HomePoll[]
   votedPolls: Set<string>
   selectedPollOptions: SelectedPollOptions
@@ -775,6 +884,8 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   resultsLoading: Set<string>
   isHydratingVotes: boolean
   pollsReady: boolean
+  friendFeed: FeedActivity[]
+  lastVotedPollId: string | null
   onVote: (poll: HomePoll, optionIndex: number) => void
 }) {
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -854,7 +965,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
           >
             {polls.map((poll) => (
               <div key={poll.id} className="snap-start shrink-0 w-[86vw] max-w-[360px] flex flex-col gap-3 rounded-[22px] p-[18px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
-                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
+                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={onVote} />
               </div>
             ))}
           </div>
@@ -870,7 +981,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
           <div className="hidden md:grid gap-6 grid-cols-2">
             {polls.map((poll) => (
               <div key={poll.id} className="group/card flex flex-col gap-3 transition-all duration-[180ms] ease-in-out hover:-translate-y-1 rounded-[20px] p-[24px]" style={{ background: '#FCFCFD', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
-                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} onVote={onVote} />
+                <PollCardInner poll={poll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={onVote} />
               </div>
             ))}
           </div>
