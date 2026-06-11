@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from 'next'
 import './globals.css'
+import Link from 'next/link'
 import { Toaster } from 'react-hot-toast'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Header } from '@/components/layout/Header'
@@ -27,6 +28,25 @@ export default function RootLayout({
         <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8">
           {children}
         </main>
+        <footer className="mx-auto w-full max-w-[1400px] px-4 pb-32 pt-6 sm:px-6 sm:pb-10 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            {[
+              { label: 'Termos', href: '/termos' },
+              { label: 'Privacidade', href: '/privacidade' },
+              { label: 'Cookies', href: '/cookies' },
+              { label: 'Contato', href: '/contato' },
+            ].map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-[12px] font-[500] text-[#94A3B8] transition hover:text-[#64748B]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <p className="mt-3 text-center text-[11px] text-[#CBD5E1]">© {new Date().getFullYear()} Pulso FC</p>
+        </footer>
         <BottomNav />
         <Toaster
           position="bottom-center"

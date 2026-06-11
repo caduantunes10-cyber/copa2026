@@ -76,10 +76,19 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           {!profile ? (
-            <button onClick={handleLogin}
-              className="rounded-[12px] bg-[#5B4BFF] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(91,75,255,0.30)] transition hover:bg-[#4A3AE8] active:scale-[0.98]">
-              Entrar
-            </button>
+            <div className="flex flex-col items-end gap-1.5">
+              <button onClick={handleLogin}
+                className="rounded-[12px] bg-[#5B4BFF] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(91,75,255,0.30)] transition hover:bg-[#4A3AE8] active:scale-[0.98]">
+                Entrar
+              </button>
+              <p className="max-w-[200px] text-right text-[10px] leading-[1.5] text-[#94A3B8]">
+                Ao continuar, você concorda com os{' '}
+                <Link href="/termos" className="underline underline-offset-1 hover:text-[#64748B]">Termos de Uso</Link>
+                {' '}e a{' '}
+                <Link href="/privacidade" className="underline underline-offset-1 hover:text-[#64748B]">Política de Privacidade</Link>
+                {' '}do Pulso FC.
+              </p>
+            </div>
           ) : (
             <Link href="/amigos" className="flex items-center gap-2.5">
               {profile.avatar_url ? (
