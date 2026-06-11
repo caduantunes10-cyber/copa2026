@@ -732,6 +732,62 @@ function RankingCard() {
 }
 
 function TermometroCard() {
+  const [status, setStatus] = useState<'loading' | 'empty' | 'done'>('loading')
+  const [percentage, setPercentage] = useState(0)
+  const [optionLabel, setOptionLabel] = useState('')
+  const [question, setQuestion] = useState('')
+
+  useEffect(() => {
+    const supabase = createClient()
+    async function load() {
+      const { data: polls } = await supabase
+        .from('polls')
+        .select('id, question, options')
+        .eq('is_active', true)
+
+      if (!polls || polls.length === 0) { setStatus('empty'); return }
+
+      const { data: allVotes } = await supabase
+        .from('poll_votes')
+        .select('poll_id, option_index')
+        .in('poll_id', polls.map((p: { id: string }) => p.id))
+
+      if (!allVotes || allVotes.length === 0) { setStatus('empty'); return }
+
+      const countByPoll: Record<string, number> = {}
+      for (const v of allVotes) {
+        countByPoll[v.poll_id] = (countByPoll[v.poll_id] || 0) + 1
+      }
+      const topPollId = Object.entries(countByPoll).sort((a, b) => b[1] - a[1])[0][0]
+      const topPoll = polls.find((p: { id: string }) => p.id === topPollId)
+      if (!topPoll) { setStatus('empty'); return }
+
+      const pollVotes = allVotes.filter((v: { poll_id: string }) => v.poll_id === topPollId)
+      const totalPollVotes = pollVotes.length
+
+      const countByOption: Record<number, number> = {}
+      for (const v of pollVotes) {
+        countByOption[v.option_index] = (countByOption[v.option_index] || 0) + 1
+      }
+      const topOptionIndex = Number(
+        Object.entries(countByOption).sort((a, b) => b[1] - a[1])[0][0]
+      )
+      const topCount = countByOption[topOptionIndex]
+      const pct = Math.round((topCount / totalPollVotes) * 100)
+
+      const options: Array<{ label: string }> = Array.isArray(topPoll.options)
+        ? topPoll.options
+        : JSON.parse(topPoll.options)
+      const label = options[topOptionIndex]?.label ?? `Opção ${topOptionIndex + 1}`
+
+      setPercentage(pct)
+      setOptionLabel(label)
+      setQuestion(topPoll.question)
+      setStatus('done')
+    }
+    load()
+  }, [])
+
   return (
     <section
       className="rounded-[24px] p-7"
@@ -744,12 +800,46 @@ function TermometroCard() {
         <TrendingUp className="h-[22px] w-[22px] text-white" strokeWidth={2} />
       </div>
       <p className="mb-3 text-[12px] font-[500] uppercase tracking-widest text-white/70">Termômetro da Comunidade</p>
-      <p className="text-[15px] font-[400] leading-[1.6] text-white/[0.85]">Dados da comunidade ainda não disponíveis.</p>
+      {status === 'loading' && <p className="text-[15px] font-[400] text-white/60">Calculando...</p>}
+      {status === 'empty' && <p className="text-[15px] font-[400] leading-[1.6] text-white/[0.85]">Dados da comunidade ainda não disponíveis.</p>}
+      {status === 'done' && (
+        <>
+          <div className="text-[52px] font-[700] leading-none tracking-[-0.04em] text-white">{percentage}%</div>
+          <div className="mt-2 text-[16px] font-[600] leading-snug text-white">{optionLabel}</div>
+          <div className="mt-1 text-[13px] font-[400] leading-[1.5] text-white/70">{question}</div>
+        </>
+      )}
     </section>
   )
 }
 
 function EstatisticasCard() {
+  const [status, setStatus] = useState<'loading' | 'empty' | 'done'>('loading')
+  const [totalVotes, setTotalVotes] = useState(0)
+  const [activePolls, setActivePolls] = useState(0)
+  const [participants, setParticipants] = useState(0)
+
+  useEffect(() => {
+    const supabase = createClient()
+    async function load() {
+      const [{ count: pollCount }, { data: voteRows }] = await Promise.all([
+        supabase.from('polls').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('poll_votes').select('user_id'),
+      ])
+
+      const total = voteRows?.length ?? 0
+      if (total === 0) { setStatus('empty'); return }
+
+      const uniqueUsers = new Set((voteRows ?? []).map((v: { user_id: string }) => v.user_id)).size
+
+      setTotalVotes(total)
+      setActivePolls(pollCount ?? 0)
+      setParticipants(uniqueUsers)
+      setStatus('done')
+    }
+    load()
+  }, [])
+
   return (
     <section
       className="rounded-[20px] p-6"
@@ -761,7 +851,24 @@ function EstatisticasCard() {
         </div>
         <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Estatísticas da Copa</h3>
       </div>
-      <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Nenhuma estatística disponível ainda.</p>
+      {status === 'loading' && <p className="text-[13px] font-[400] text-[#94A3B8]">Carregando...</p>}
+      {status === 'empty' && <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Nenhuma estatística disponível ainda.</p>}
+      {status === 'done' && (
+        <ul className="space-y-3">
+          <li className="flex items-center justify-between">
+            <span className="text-[13px] font-[400] text-[#64748B]">Votos reais</span>
+            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{totalVotes.toLocaleString('pt-BR')}</span>
+          </li>
+          <li className="flex items-center justify-between">
+            <span className="text-[13px] font-[400] text-[#64748B]">Enquetes ativas</span>
+            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{activePolls}</span>
+          </li>
+          <li className="flex items-center justify-between">
+            <span className="text-[13px] font-[400] text-[#64748B]">Participantes</span>
+            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{participants.toLocaleString('pt-BR')}</span>
+          </li>
+        </ul>
+      )}
     </section>
   )
 }
