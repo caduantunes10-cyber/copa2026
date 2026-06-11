@@ -7,9 +7,9 @@ import toast from 'react-hot-toast'
 import FriendComparisonSection from '@/components/premium/FriendComparisonSection'
 
 const BENEFITS = [
-  { icon: Users, text: 'Compare suas opiniões com amigos' },
-  { icon: BadgeCheck, text: 'Badge VIP visível no seu perfil' },
-  { icon: ShieldCheck, text: 'Experiências premium da Copa' },
+  { icon: Users, text: 'Compare seus votos com amigos' },
+  { icon: BadgeCheck, text: 'Veja quem pensa igual a você' },
+  { icon: ShieldCheck, text: 'Compatibilidade avançada entre torcedores' },
 ]
 
 export default function PremiumPage() {
