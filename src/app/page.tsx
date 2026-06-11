@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Activity, BarChart3, Crown, TrendingUp, Users } from 'lucide-react'
+import { Activity, Crown, TrendingUp, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity } from '@/types'
 
@@ -562,18 +562,18 @@ export default function HomePage() {
           <div className="grid gap-4 lg:hidden">
             <FriendsCtaCard feed={friendFeed} />
             <PremiumCtaCard />
-            <RankingCard />
-            <TermometroCard />
-            <EstatisticasCard />
+            <CompatibilityHighlightCard />
+            <SurprisingOpinionCard />
+            <BiggestDisagreementCard />
           </div>
         </main>
 
         <aside className="hidden space-y-5 lg:block lg:pt-0">
           <FriendsCtaCard feed={friendFeed} />
           <PremiumCtaCard />
-          <RankingCard />
-          <TermometroCard />
-          <EstatisticasCard />
+          <CompatibilityHighlightCard />
+          <SurprisingOpinionCard />
+          <BiggestDisagreementCard />
         </aside>
 
       </div>
@@ -1113,131 +1113,10 @@ function PremiumCtaCard() {
   )
 }
 
-type CompatibilityEntry = {
-  friendId: string
-  username: string
-  score: number
-  totalCompared: number
-}
+// ─── Surprising Opinion ─────────────────────────────────────────────────────────────────
+// Shows the leading opinion on the most-voted active poll.
 
-function RankingCard() {
-  const [entries, setEntries] = useState<CompatibilityEntry[]>([])
-  const [status, setStatus] = useState<'loading' | 'unauthenticated' | 'locked' | 'no-friends' | 'no-shared' | 'done'>('loading')
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setStatus('unauthenticated'); return }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_premium) { setStatus('locked'); return }
-
-      const { data: friendships } = await supabase
-        .from('friendships')
-        .select('following_id')
-        .eq('follower_id', user.id)
-
-      if (!friendships || friendships.length === 0) { setStatus('no-friends'); return }
-
-      const friendIds = friendships.map((f: { following_id: string }) => f.following_id)
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .in('id', friendIds)
-
-      if (!profiles || profiles.length === 0) { setStatus('no-friends'); return }
-
-      const results = await Promise.all(
-        profiles.map(async (p: { id: string; username: string }) => {
-          const { data } = await supabase.rpc('get_friend_comparison', {
-            current_user_id: user.id,
-            friend_user_id: p.id,
-          })
-          const rows = data || []
-          const matches = rows.filter((r: { comparison_type: string }) => r.comparison_type === 'match').length
-          const total = rows.length
-          const score = total > 0 ? Math.round((matches / total) * 100) : 0
-          return { friendId: p.id, username: p.username, score, totalCompared: total } as CompatibilityEntry
-        })
-      )
-
-      const withShared = results.filter(r => r.totalCompared > 0)
-      if (withShared.length === 0) { setStatus('no-shared'); return }
-
-      const top3 = withShared.sort((a, b) => b.score - a.score).slice(0, 3)
-      setEntries(top3)
-      setStatus('done')
-    }
-
-    load()
-  }, [])
-
-  const medals = ['🥇', '🥈', '🥉']
-
-  return (
-    <section
-      className="rounded-[20px] p-6"
-      style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(240,253,244,0.70) 100%)', border: '1px solid rgba(22,101,52,0.10)', boxShadow: '0 8px 24px rgba(15,23,42,0.06)', backdropFilter: 'blur(12px)' }}
-    >
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(34,197,94,0.10)' }}>
-          <Users className="h-[18px] w-[18px] text-[#16A34A]" strokeWidth={2} />
-        </div>
-        <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Ranking de Compatibilidade</h3>
-      </div>
-
-      {status === 'loading' && (
-        <p className="text-[13px] font-[400] text-[#64748B]">Calculando ranking...</p>
-      )}
-      {status === 'unauthenticated' && (
-        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Entre para ver seu ranking de compatibilidade.</p>
-      )}
-      {status === 'locked' && (
-        <div>
-          <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Ranking de compatibilidade é um recurso Premium.</p>
-          <Link
-            href="/premium"
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#6C3BFF] px-4 py-2 text-[12px] font-[700] text-white transition hover:bg-[#5B2FE5]"
-          >
-            <Crown className="h-3.5 w-3.5" strokeWidth={2.5} />
-            Conhecer Premium
-          </Link>
-        </div>
-      )}
-      {status === 'no-friends' && (
-        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Adicione amigos para ver seu ranking.</p>
-      )}
-      {status === 'no-shared' && (
-        <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Vote nas mesmas enquetes que seus amigos para gerar o ranking.</p>
-      )}
-      {status === 'done' && (
-        <ul className="space-y-2">
-          {entries.map((entry, idx) => (
-            <li key={entry.friendId} className="grid w-full min-w-0 grid-cols-[20px_minmax(0,1fr)_48px] items-center gap-2">
-              <span className="text-[14px] leading-none">{medals[idx]}</span>
-              <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-[500] text-[#0F172A]">
-                {entry.username}
-              </span>
-              <span className="w-12 shrink-0 text-right text-[13px] font-[700] tabular-nums text-[#16A34A]">
-                {entry.score}%
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  )
-}
-
-function TermometroCard() {
+function SurprisingOpinionCard() {
   const [status, setStatus] = useState<'loading' | 'empty' | 'done'>('loading')
   const [percentage, setPercentage] = useState(0)
   const [optionLabel, setOptionLabel] = useState('')
@@ -1250,41 +1129,28 @@ function TermometroCard() {
         .from('polls')
         .select('id, question, options')
         .eq('is_active', true)
-
       if (!polls || polls.length === 0) { setStatus('empty'); return }
 
       const { data: allVotes } = await supabase
         .from('poll_votes')
         .select('poll_id, option_index')
         .in('poll_id', polls.map((p: { id: string }) => p.id))
-
       if (!allVotes || allVotes.length === 0) { setStatus('empty'); return }
 
       const countByPoll: Record<string, number> = {}
-      for (const v of allVotes) {
-        countByPoll[v.poll_id] = (countByPoll[v.poll_id] || 0) + 1
-      }
+      for (const v of allVotes) countByPoll[v.poll_id] = (countByPoll[v.poll_id] || 0) + 1
       const topPollId = Object.entries(countByPoll).sort((a, b) => b[1] - a[1])[0][0]
       const topPoll = polls.find((p: { id: string }) => p.id === topPollId)
       if (!topPoll) { setStatus('empty'); return }
 
       const pollVotes = allVotes.filter((v: { poll_id: string }) => v.poll_id === topPollId)
-      const totalPollVotes = pollVotes.length
-
+      const total = pollVotes.length
       const countByOption: Record<number, number> = {}
-      for (const v of pollVotes) {
-        countByOption[v.option_index] = (countByOption[v.option_index] || 0) + 1
-      }
-      const topOptionIndex = Number(
-        Object.entries(countByOption).sort((a, b) => b[1] - a[1])[0][0]
-      )
-      const topCount = countByOption[topOptionIndex]
-      const pct = Math.round((topCount / totalPollVotes) * 100)
-
-      const options: Array<{ label: string }> = Array.isArray(topPoll.options)
-        ? topPoll.options
-        : JSON.parse(topPoll.options)
-      const label = options[topOptionIndex]?.label ?? `Opção ${topOptionIndex + 1}`
+      for (const v of pollVotes) countByOption[v.option_index] = (countByOption[v.option_index] || 0) + 1
+      const topIdx = Number(Object.entries(countByOption).sort((a, b) => b[1] - a[1])[0][0])
+      const pct = Math.round((countByOption[topIdx] / total) * 100)
+      const options: Array<{ label: string }> = Array.isArray(topPoll.options) ? topPoll.options : JSON.parse(topPoll.options)
+      const label = options[topIdx]?.label ?? `Opção ${topIdx + 1}`
 
       setPercentage(pct)
       setOptionLabel(label)
@@ -1296,51 +1162,77 @@ function TermometroCard() {
 
   return (
     <section
-      className="rounded-[24px] p-7"
-      style={{
-        background: 'linear-gradient(135deg, #16A34A 0%, #2563EB 100%)',
-        boxShadow: '0 20px 50px rgba(37,99,235,0.22)',
-      }}
+      className="rounded-[20px] p-5"
+      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}
     >
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-        <TrendingUp className="h-[22px] w-[22px] text-white" strokeWidth={2} />
-      </div>
-      <p className="mb-3 text-[12px] font-[500] uppercase tracking-widest text-white/70">Termômetro da Comunidade</p>
-      {status === 'loading' && <p className="text-[15px] font-[400] text-white/60">Calculando...</p>}
-      {status === 'empty' && <p className="text-[15px] font-[400] leading-[1.6] text-white/[0.85]">Dados da comunidade ainda não disponíveis.</p>}
+      <p className="mb-4 text-[11px] font-[600] uppercase tracking-[0.07em] text-[#94A3B8]">A maioria decidiu</p>
+      {status === 'loading' && (
+        <div className="space-y-2">
+          <div className="h-8 w-2/3 animate-pulse rounded-[6px] bg-slate-100" />
+          <div className="h-3 w-full animate-pulse rounded-[6px] bg-slate-100" />
+        </div>
+      )}
+      {status === 'empty' && (
+        <p className="text-[13px] leading-[1.6] text-[#94A3B8]">Nenhum dado disponível ainda.</p>
+      )}
       {status === 'done' && (
         <>
-          <div className="text-[52px] font-[700] leading-none tracking-[-0.04em] text-white">{percentage}%</div>
-          <div className="mt-2 text-[16px] font-[600] leading-snug text-white">{optionLabel}</div>
-          <div className="mt-1 text-[13px] font-[400] leading-[1.5] text-white/70">{question}</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[36px] font-[800] leading-none tracking-[-0.04em] text-[#0F172A]">{percentage}%</span>
+            <span className="text-[13px] font-[500] text-[#64748B]">dos votos</span>
+          </div>
+          <p className="mt-2 text-[14px] font-[600] leading-[1.35] tracking-[-0.01em] text-[#0F172A]">{optionLabel}</p>
+          <p className="mt-1 text-[12px] font-[400] leading-[1.55] text-[#94A3B8]">{question}</p>
         </>
       )}
     </section>
   )
 }
 
-function EstatisticasCard() {
+// ─── Biggest Disagreement ───────────────────────────────────────────────────────
+// Surfaces the most evenly split poll — the one the community disagrees on most.
+
+function BiggestDisagreementCard() {
   const [status, setStatus] = useState<'loading' | 'empty' | 'done'>('loading')
-  const [totalVotes, setTotalVotes] = useState(0)
-  const [activePolls, setActivePolls] = useState(0)
-  const [participants, setParticipants] = useState(0)
+  const [question, setQuestion] = useState('')
+  const [splitPct, setSplitPct] = useState(0)
 
   useEffect(() => {
     const supabase = createClient()
     async function load() {
-      const [{ count: pollCount }, { data: voteRows }] = await Promise.all([
-        supabase.from('polls').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('poll_votes').select('user_id'),
-      ])
+      const { data: polls } = await supabase
+        .from('polls')
+        .select('id, question')
+        .eq('is_active', true)
+      if (!polls || polls.length === 0) { setStatus('empty'); return }
 
-      const total = voteRows?.length ?? 0
-      if (total === 0) { setStatus('empty'); return }
+      const { data: allVotes } = await supabase
+        .from('poll_votes')
+        .select('poll_id, option_index')
+        .in('poll_id', polls.map((p: { id: string }) => p.id))
+      if (!allVotes || allVotes.length === 0) { setStatus('empty'); return }
 
-      const uniqueUsers = new Set((voteRows ?? []).map((v: { user_id: string }) => v.user_id)).size
+      // For each poll compute how split it is (leading % closest to 50)
+      type PollSplit = { pollId: string; leadingPct: number; total: number }
+      const splits: PollSplit[] = []
+      for (const poll of polls) {
+        const votes = allVotes.filter((v: { poll_id: string }) => v.poll_id === poll.id)
+        if (votes.length < 5) continue
+        const countByOption: Record<number, number> = {}
+        for (const v of votes) countByOption[v.option_index] = (countByOption[v.option_index] || 0) + 1
+        const max = Math.max(...Object.values(countByOption))
+        const pct = Math.round((max / votes.length) * 100)
+        splits.push({ pollId: poll.id, leadingPct: pct, total: votes.length })
+      }
+      if (splits.length === 0) { setStatus('empty'); return }
 
-      setTotalVotes(total)
-      setActivePolls(pollCount ?? 0)
-      setParticipants(uniqueUsers)
+      // Most divided = leading option has the lowest % (closest to 50)
+      const mostDivided = splits.sort((a, b) => a.leadingPct - b.leadingPct)[0]
+      const poll = polls.find((p: { id: string }) => p.id === mostDivided.pollId)
+      if (!poll) { setStatus('empty'); return }
+
+      setQuestion(poll.question)
+      setSplitPct(mostDivided.leadingPct)
       setStatus('done')
     }
     load()
@@ -1348,32 +1240,165 @@ function EstatisticasCard() {
 
   return (
     <section
-      className="rounded-[20px] p-6"
-      style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(240,253,244,0.70) 100%)', border: '1px solid rgba(22,101,52,0.10)', boxShadow: '0 8px 24px rgba(15,23,42,0.06)', backdropFilter: 'blur(12px)' }}
+      className="rounded-[20px] p-5"
+      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}
     >
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: 'rgba(37,99,235,0.08)' }}>
-          <BarChart3 className="h-[18px] w-[18px] text-[#2563EB]" strokeWidth={2} />
+      <p className="mb-4 text-[11px] font-[600] uppercase tracking-[0.07em] text-[#94A3B8]">Maior divergência</p>
+      {status === 'loading' && (
+        <div className="space-y-2">
+          <div className="h-3 w-full animate-pulse rounded-[6px] bg-slate-100" />
+          <div className="h-3 w-4/5 animate-pulse rounded-[6px] bg-slate-100" />
         </div>
-        <h3 className="text-[14px] font-[600] tracking-[-0.01em] text-[#0F172A]">Estatísticas da Copa</h3>
-      </div>
-      {status === 'loading' && <p className="text-[13px] font-[400] text-[#94A3B8]">Carregando...</p>}
-      {status === 'empty' && <p className="text-[13px] font-[400] leading-[1.6] text-[#64748B]">Nenhuma estatística disponível ainda.</p>}
+      )}
+      {status === 'empty' && (
+        <p className="text-[13px] leading-[1.6] text-[#94A3B8]">Nenhum dado disponível ainda.</p>
+      )}
       {status === 'done' && (
-        <ul className="space-y-3">
-          <li className="flex items-center justify-between">
-            <span className="text-[13px] font-[400] text-[#64748B]">Votos reais</span>
-            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{totalVotes.toLocaleString('pt-BR')}</span>
-          </li>
-          <li className="flex items-center justify-between">
-            <span className="text-[13px] font-[400] text-[#64748B]">Enquetes ativas</span>
-            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{activePolls}</span>
-          </li>
-          <li className="flex items-center justify-between">
-            <span className="text-[13px] font-[400] text-[#64748B]">Participantes</span>
-            <span className="text-[14px] font-[700] tabular-nums text-[#0F172A]">{participants.toLocaleString('pt-BR')}</span>
-          </li>
-        </ul>
+        <>
+          <p className="text-[14px] font-[700] leading-[1.35] tracking-[-0.015em] text-[#0F172A]">{question}</p>
+          <div className="mt-4">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[11px] font-[500] uppercase tracking-[0.05em] text-[#94A3B8]">Opção líder</span>
+              <span className="text-[13px] font-[700] tabular-nums text-[#0F172A]">{splitPct}%</span>
+            </div>
+            <div className="h-[3px] w-full overflow-hidden rounded-full bg-[#F1F5F9]">
+              <div
+                className="h-full rounded-full bg-[#0F172A] transition-all duration-700"
+                style={{ width: `${splitPct}%` }}
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-[12px] font-[400] leading-[1.5] text-[#94A3B8]">A torcida está dividida nesta discussão.</p>
+        </>
+      )}
+    </section>
+  )
+}
+
+// ─── Compatibility Highlight ────────────────────────────────────────────────────
+// Shows the single most compatible friend. Premium-gated.
+
+type CompatibilityEntry = {
+  friendId: string
+  username: string
+  score: number
+  totalCompared: number
+}
+
+function CompatibilityHighlightCard() {
+  const [top, setTop] = useState<CompatibilityEntry | null>(null)
+  const [status, setStatus] = useState<'loading' | 'unauthenticated' | 'locked' | 'no-friends' | 'no-shared' | 'done'>('loading')
+
+  useEffect(() => {
+    const supabase = createClient()
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setStatus('unauthenticated'); return }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single()
+      if (!profile?.is_premium) { setStatus('locked'); return }
+
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('following_id')
+        .eq('follower_id', user.id)
+      if (!friendships || friendships.length === 0) { setStatus('no-friends'); return }
+
+      const friendIds = friendships.map((f: { following_id: string }) => f.following_id)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', friendIds)
+      if (!profiles || profiles.length === 0) { setStatus('no-friends'); return }
+
+      const results = await Promise.all(
+        profiles.map(async (p: { id: string; username: string }) => {
+          const { data } = await supabase.rpc('get_friend_comparison', {
+            current_user_id: user.id,
+            friend_user_id: p.id,
+          })
+          const rows = data || []
+          const matches = rows.filter((r: { comparison_type: string }) => r.comparison_type === 'match').length
+          const total = rows.length
+          return { friendId: p.id, username: p.username, score: total > 0 ? Math.round((matches / total) * 100) : 0, totalCompared: total } as CompatibilityEntry
+        })
+      )
+      const withShared = results.filter(r => r.totalCompared > 0)
+      if (withShared.length === 0) { setStatus('no-shared'); return }
+
+      setTop(withShared.sort((a, b) => b.score - a.score)[0])
+      setStatus('done')
+    }
+    load()
+  }, [])
+
+  return (
+    <section
+      className="rounded-[20px] p-5"
+      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}
+    >
+      <p className="mb-4 text-[11px] font-[600] uppercase tracking-[0.07em] text-[#94A3B8]">Maior afinidade</p>
+
+      {status === 'loading' && (
+        <div className="space-y-2">
+          <div className="h-6 w-1/2 animate-pulse rounded-[6px] bg-slate-100" />
+          <div className="h-3 w-1/3 animate-pulse rounded-[6px] bg-slate-100" />
+        </div>
+      )}
+
+      {status === 'unauthenticated' && (
+        <p className="text-[13px] leading-[1.6] text-[#94A3B8]">Entre para ver sua maior compatibilidade.</p>
+      )}
+
+      {status === 'locked' && (
+        <div>
+          <p className="mb-4 text-[13px] leading-[1.6] text-[#475569]">Descubra com quem você mais concorda.</p>
+          <Link
+            href="/premium"
+            className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#0F172A] px-4 py-2.5 text-[12px] font-[600] text-white transition hover:bg-[#1E293B]"
+          >
+            <Crown className="h-3.5 w-3.5" strokeWidth={2} />
+            Ver com Premium
+          </Link>
+        </div>
+      )}
+
+      {(status === 'no-friends' || status === 'no-shared') && (
+        <p className="text-[13px] leading-[1.6] text-[#94A3B8]">
+          {status === 'no-friends' ? 'Adicione amigos para calcular afinidade.' : 'Vote nas mesmas enquetes que seus amigos.'}
+        </p>
+      )}
+
+      {status === 'done' && top && (
+        <>
+          <Link href={`/premium/compare/${top.friendId}`} className="block no-underline group">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <p className="text-[20px] font-[800] leading-none tracking-[-0.03em] text-[#0F172A]">{top.score}%</p>
+                <p className="mt-1 truncate text-[13px] font-[500] text-[#475569]">{top.username}</p>
+              </div>
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}
+              >
+                <Users className="h-4 w-4 text-[#475569]" strokeWidth={2} />
+              </div>
+            </div>
+            <div className="mt-4 h-[3px] w-full overflow-hidden rounded-full bg-[#F1F5F9]">
+              <div
+                className="h-full rounded-full bg-[#0F172A] transition-all duration-700"
+                style={{ width: `${top.score}%` }}
+              />
+            </div>
+            <p className="mt-3 text-[12px] font-[500] tracking-[-0.005em] text-[#94A3B8] group-hover:text-[#475569] transition-colors">
+              Ver comparação completa
+            </p>
+          </Link>
+        </>
       )}
     </section>
   )
