@@ -135,6 +135,7 @@ function buildTodayInsights({
 type InsightMeta = {
   title: string
   body: string
+  subtext: string
   context: string
   cta: string
   accentColor: string
@@ -157,8 +158,9 @@ function buildInsightMeta(insight: Insight): InsightMeta {
       const nameMatch = before.match(/^(.+?) concordou com você/)
       const name = nameMatch ? nameMatch[1] : 'Um amigo'
       return {
-        title: 'Compatibilidade',
-        body: `Você e ${name} pensam parecido.`,
+        title: 'Em comum',
+        body: `Vocês estão mais parecidos do que imaginam.`,
+        subtext: `Você e ${name} chegaram à mesma resposta.`,
         context,
         cta: 'Ver compatibilidade',
         accentColor: '#15803D',
@@ -169,8 +171,9 @@ function buildInsightMeta(insight: Insight): InsightMeta {
       const nameMatch = before.match(/^(.+?) discordou de você/)
       const name = nameMatch ? nameMatch[1] : 'Um amigo'
       return {
-        title: 'Divergência',
-        body: `Você e ${name} discordaram nesta discussão.`,
+        title: 'Lados opostos',
+        body: `Você e ${name} escolheram lados opostos.`,
+        subtext: 'Essa diferença pode ser mais reveladora do que parece.',
         context,
         cta: 'Comparar opiniões',
         accentColor: '#B91C1C',
@@ -179,8 +182,9 @@ function buildInsightMeta(insight: Insight): InsightMeta {
     }
     case 'Minoria':
       return {
-        title: 'Sua opinião',
-        body: 'Você está entre as opiniões menos populares.',
+        title: 'Opinião rara',
+        body: 'Você está sozinho nessa.',
+        subtext: 'Poucos torcedores escolheram a mesma resposta que você.',
         context,
         cta: 'Ver resultados',
         accentColor: '#1D4ED8',
@@ -188,8 +192,9 @@ function buildInsightMeta(insight: Insight): InsightMeta {
       }
     case 'Comunidade':
       return {
-        title: 'Comunidade',
-        body: 'A torcida está dividida nesta discussão.',
+        title: 'Torcida dividida',
+        body: 'A torcida está dividida.',
+        subtext: 'Não há consenso. Essa resposta pode te surpreender.',
         context,
         cta: 'Ver enquete',
         accentColor: '#374151',
@@ -199,6 +204,7 @@ function buildInsightMeta(insight: Insight): InsightMeta {
       return {
         title: insight.label,
         body: insight.text,
+        subtext: '',
         context: '',
         cta: insight.cta || '',
         accentColor: '#374151',
@@ -226,11 +232,16 @@ function InsightCard({ insight }: { insight: Insight }) {
         >
           {meta.title}
         </span>
-        <p className="mt-1 text-[20px] font-[800] leading-[1.25] tracking-[-0.03em] text-[#0F172A]">
+        <p className="mt-1 text-[21px] font-[800] leading-[1.2] tracking-[-0.03em] text-[#0F172A]">
           {meta.body}
         </p>
+        {meta.subtext && (
+          <p className="mt-2 text-[14px] font-[400] leading-[1.55] text-[#334155]">
+            {meta.subtext}
+          </p>
+        )}
         {meta.context && (
-          <p className="mt-3 text-[13px] font-[400] leading-[1.6] text-[#64748B]">
+          <p className="mt-3 text-[12px] font-[500] uppercase tracking-[0.05em] text-[#94A3B8]">
             {meta.context}
           </p>
         )}
