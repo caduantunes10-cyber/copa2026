@@ -6,12 +6,22 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { Header } from '@/components/layout/Header'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: 'Copa 2026 — The World Cup Social Network',
-  description: 'A experiência social em tempo real da Copa do Mundo 2026: votos, palpites, rankings, amigos e rivalidade.',
+  metadataBase: new URL('https://www.pulsofc.com.br'),
+  title: 'Pulso FC — Descubra quem pensa como você',
+  description: 'Vote em enquetes de futebol, compare opiniões com amigos e descubra quem realmente pensa como você.',
   openGraph: {
-    title: 'Copa 2026 — The World Cup Social Network',
-    description: 'Vote, reaja, preveja resultados e dispute rankings sociais durante a Copa do Mundo 2026.',
+    title: 'Pulso FC — Descubra quem pensa como você',
+    description: 'Vote em enquetes de futebol, compare opiniões com amigos e descubra quem realmente pensa como você.',
+    url: 'https://www.pulsofc.com.br',
+    siteName: 'Pulso FC',
+    images: ['/og-image.png'],
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulso FC — Descubra quem pensa como você',
+    description: 'Vote em enquetes de futebol, compare opiniões com amigos e descubra quem realmente pensa como você.',
     images: ['/og-image.png'],
   },
 }
