@@ -535,21 +535,12 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
               </div>
             ))}
           </div>
-          {/* Mobile: pagination dots */}
+          {/* Mobile: position indicator */}
           {polls.length > 1 && (
-            <div className="mt-4 flex justify-center gap-[6px] md:hidden" aria-hidden="true">
-              {polls.map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: i === activeIndex ? 18 : 6,
-                    height: 6,
-                    borderRadius: 99,
-                    background: i === activeIndex ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.22)',
-                    transition: 'width 0.25s ease, background 0.25s ease',
-                  }}
-                />
-              ))}
+            <div className="mt-3 flex justify-center md:hidden">
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.55)' }}>
+                {activeIndex + 1} / {polls.length}
+              </span>
             </div>
           )}
           {/* Desktop: grid */}
