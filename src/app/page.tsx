@@ -20,6 +20,314 @@ const HOME_POLLS_LIMIT = 25
 
 
 
+// ─── Today Insights ────────────────────────────────────────────────────────
+
+type Insight = {
+  id: string
+  label: string
+  text: string
+  cta?: string
+  href?: string
+}
+
+function buildTodayInsights({
+  polls,
+  votedPolls,
+  selectedPollOptions,
+  pollResults,
+  friendFeed,
+  userId,
+  pollsReady,
+  isHydratingVotes,
+}: {
+  polls: HomePoll[]
+  votedPolls: Set<string>
+  selectedPollOptions: SelectedPollOptions
+  pollResults: PollResults
+  friendFeed: FeedActivity[]
+  userId: string | null
+  pollsReady: boolean
+  isHydratingVotes: boolean
+}): Insight[] | null {
+  if (!pollsReady || isHydratingVotes) return null
+  if (!userId) return []
+
+  const results: Insight[] = []
+
+  // 1. Friend disagreement / agreement — from activity_feed
+  const pollVoteFeed = friendFeed.filter(f => f.action_type === 'poll_vote' && f.target_id)
+  for (const activity of pollVoteFeed) {
+    const pollId = activity.target_id!
+    if (!votedPolls.has(pollId)) continue
+    const friendOptionIndex = (activity.meta as Record<string, unknown> | null)?.option_index
+    if (friendOptionIndex === undefined || friendOptionIndex === null) continue
+    const myOptionIndex = selectedPollOptions[pollId]
+    if (myOptionIndex === undefined) continue
+    const friendName = activity.profile?.full_name || activity.profile?.username || 'Um amigo'
+    const pollQuestion = activity.target_name || 'uma enquete'
+    const shortQuestion = pollQuestion.length > 50 ? pollQuestion.slice(0, 47) + '…' : pollQuestion
+
+    if (Number(friendOptionIndex) === myOptionIndex) {
+      results.push({
+        id: `agree-${pollId}`,
+        label: 'Afinidade',
+        text: `${friendName} concordou com você: "${shortQuestion}"`,
+        cta: 'Comparar',
+        href: `/premium/compare/${activity.user_id}`,
+      })
+    } else {
+      results.push({
+        id: `disagree-${pollId}`,
+        label: 'Discordância',
+        text: `${friendName} discordou de você em: "${shortQuestion}"`,
+        cta: 'Comparar',
+        href: `/premium/compare/${activity.user_id}`,
+      })
+    }
+    if (results.length >= 2) break
+  }
+
+  // 2. Minority opinion — user voted for an option with < 35% share
+  for (const pollId of Array.from(votedPolls)) {
+    const myOptionIndex = selectedPollOptions[pollId]
+    if (myOptionIndex === undefined) continue
+    const counts = pollResults[pollId] || {}
+    const total = Object.values(counts).reduce((s, c) => s + c, 0)
+    if (total < 5) continue
+    const myCount = counts[myOptionIndex] || 0
+    const myPct = Math.round((myCount / total) * 100)
+    if (myPct > 0 && myPct < 35) {
+      const poll = polls.find(p => p.id === pollId)
+      if (!poll) continue
+      const shortQ = poll.question.length > 50 ? poll.question.slice(0, 47) + '…' : poll.question
+      results.push({
+        id: `minority-${pollId}`,
+        label: 'Minoria',
+        text: `Sua opinião ficou entre as menos escolhidas em: "${shortQ}"`,
+      })
+      break
+    }
+  }
+
+  // 3. Divided community — any voted poll where leading option ≤ 55%
+  for (const pollId of Array.from(votedPolls)) {
+    const counts = pollResults[pollId] || {}
+    const total = Object.values(counts).reduce((s, c) => s + c, 0)
+    if (total < 10) continue
+    const maxCount = Math.max(...Object.values(counts))
+    const leadingPct = Math.round((maxCount / total) * 100)
+    if (leadingPct <= 55) {
+      const poll = polls.find(p => p.id === pollId)
+      if (!poll) continue
+      const shortQ = poll.question.length > 50 ? poll.question.slice(0, 47) + '…' : poll.question
+      results.push({
+        id: `divided-${pollId}`,
+        label: 'Comunidade',
+        text: `A comunidade está dividida sobre: "${shortQ}"`,
+      })
+      break
+    }
+  }
+
+  return results.slice(0, 3)
+}
+
+type InsightMeta = {
+  title: string
+  body: string
+  context: string
+  cta: string
+  accentColor: string
+  accentBg: string
+}
+
+function extractQuotedContext(text: string): { before: string; context: string } {
+  const match = text.match(/^(.*?)"(.+?)"\s*$/) || text.match(/^(.*?):?\s*"(.+)"\s*$/)
+  if (match) return { before: match[1].trim(), context: match[2].trim() }
+  const colonIdx = text.lastIndexOf(':')
+  if (colonIdx !== -1) return { before: text.slice(0, colonIdx).trim(), context: text.slice(colonIdx + 1).trim() }
+  return { before: text, context: '' }
+}
+
+function buildInsightMeta(insight: Insight): InsightMeta {
+  const { before, context } = extractQuotedContext(insight.text)
+
+  switch (insight.label) {
+    case 'Afinidade': {
+      const nameMatch = before.match(/^(.+?) concordou com você/)
+      const name = nameMatch ? nameMatch[1] : 'Um amigo'
+      return {
+        title: 'Compatibilidade',
+        body: `Você e ${name} pensam parecido.`,
+        context,
+        cta: 'Ver compatibilidade',
+        accentColor: '#15803D',
+        accentBg: 'rgba(34,197,94,0.08)',
+      }
+    }
+    case 'Discordância': {
+      const nameMatch = before.match(/^(.+?) discordou de você/)
+      const name = nameMatch ? nameMatch[1] : 'Um amigo'
+      return {
+        title: 'Divergência',
+        body: `Você e ${name} discordaram nesta discussão.`,
+        context,
+        cta: 'Comparar opiniões',
+        accentColor: '#B91C1C',
+        accentBg: 'rgba(239,68,68,0.07)',
+      }
+    }
+    case 'Minoria':
+      return {
+        title: 'Sua opinião',
+        body: 'Você está entre as opiniões menos populares.',
+        context,
+        cta: 'Ver resultados',
+        accentColor: '#1D4ED8',
+        accentBg: 'rgba(37,99,235,0.07)',
+      }
+    case 'Comunidade':
+      return {
+        title: 'Comunidade',
+        body: 'A torcida está dividida nesta discussão.',
+        context,
+        cta: 'Ver enquete',
+        accentColor: '#374151',
+        accentBg: 'rgba(55,65,81,0.06)',
+      }
+    default:
+      return {
+        title: insight.label,
+        body: insight.text,
+        context: '',
+        cta: insight.cta || '',
+        accentColor: '#374151',
+        accentBg: 'rgba(55,65,81,0.06)',
+      }
+  }
+}
+
+function InsightCard({ insight }: { insight: Insight }) {
+  const meta = buildInsightMeta(insight)
+  const card = (
+    <div
+      className="flex h-full flex-col justify-between rounded-[24px] p-6 transition-all duration-200 active:scale-[0.99] hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] hover:-translate-y-[1px]"
+      style={{
+        background: 'rgba(255,255,255,0.93)',
+        border: '1px solid rgba(226,232,240,0.95)',
+        boxShadow: '0 6px 20px rgba(15,23,42,0.06)',
+        minHeight: '220px',
+      }}
+    >
+      <div>
+        <span
+          className="mb-5 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-[700] uppercase tracking-[0.06em]"
+          style={{ background: meta.accentBg, color: meta.accentColor }}
+        >
+          {meta.title}
+        </span>
+        <p className="mt-1 text-[20px] font-[800] leading-[1.25] tracking-[-0.03em] text-[#0F172A]">
+          {meta.body}
+        </p>
+        {meta.context && (
+          <p className="mt-3 text-[13px] font-[400] leading-[1.6] text-[#64748B]">
+            {meta.context}
+          </p>
+        )}
+      </div>
+      {(meta.cta || insight.cta) && (
+        <div className="mt-6 flex items-center gap-1.5 text-[13px] font-[700] tracking-[-0.01em]" style={{ color: meta.accentColor }}>
+          {meta.cta || insight.cta}
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+    </div>
+  )
+  return insight.href ? (
+    <Link href={insight.href} className="block h-full no-underline">
+      {card}
+    </Link>
+  ) : (
+    <>{card}</>
+  )
+}
+
+function TodayInsightsSection({ insights, loading }: { insights: Insight[] | null; loading: boolean }) {
+  const sectionHeader = (
+    <div className="mb-5">
+      <h2 className="text-[22px] font-[800] tracking-[-0.03em] text-[#0F172A]">Seu universo hoje</h2>
+      <p className="mt-1 text-[14px] text-[#64748B]">Opiniões, afinidades e divergências que surgiram desde sua última visita.</p>
+    </div>
+  )
+
+  const skeletonCard = (
+    <div className="animate-pulse rounded-[24px] p-6" style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(226,232,240,0.9)', minHeight: '220px' }}>
+      <div className="mb-5 h-5 w-24 rounded-full bg-slate-200" />
+      <div className="mb-2 h-6 w-4/5 rounded-full bg-slate-200" />
+      <div className="mb-1.5 h-6 w-3/5 rounded-full bg-slate-200" />
+      <div className="mt-3 h-3.5 w-full rounded-full bg-slate-100" />
+      <div className="mt-1.5 h-3.5 w-5/6 rounded-full bg-slate-100" />
+      <div className="mt-6 h-3.5 w-1/3 rounded-full bg-slate-100" />
+    </div>
+  )
+
+  if (loading) {
+    return (
+      <section>
+        {sectionHeader}
+        {/* Mobile skeleton carousel */}
+        <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 md:hidden">
+          {[1, 2].map(i => (
+            <div key={i} className="w-[87vw] max-w-[360px] shrink-0 snap-start">{skeletonCard}</div>
+          ))}
+        </div>
+        {/* Desktop skeleton grid */}
+        <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <div key={i}>{skeletonCard}</div>)}
+        </div>
+      </section>
+    )
+  }
+
+  const isEmpty = !insights || insights.length === 0
+
+  return (
+    <section>
+      {sectionHeader}
+
+      {isEmpty ? (
+        <div
+          className="rounded-[24px] px-6 py-8"
+          style={{ background: 'rgba(255,255,255,0.72)', border: '1px solid rgba(226,232,240,0.9)' }}
+        >
+          <p className="text-[15px] leading-[1.7] text-[#64748B]">
+            Vote em mais enquetes e adicione amigos para descobrir quem pensa como você.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile: horizontal snap carousel */}
+          <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 md:hidden">
+            {insights.map(insight => (
+              <div key={insight.id} className="w-[87vw] max-w-[360px] shrink-0 snap-start">
+                <InsightCard insight={insight} />
+              </div>
+            ))}
+          </div>
+          {/* Desktop: grid */}
+          <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
+            {insights.map(insight => (
+              <InsightCard key={insight.id} insight={insight} />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
 function HeroSection() {
   return (
     <div
@@ -64,6 +372,7 @@ export default function HomePage() {
   const [isHydratingVotes, setIsHydratingVotes] = useState(true)
   const [pollsReady, setPollsReady] = useState(false)
   const [friendFeed, setFriendFeed] = useState<FeedActivity[]>([])
+  const [userId, setUserId] = useState<string | null>(null)
   const latestPollHydrationRequest = useRef(0)
   const supabase = createClient()
 
@@ -100,6 +409,7 @@ export default function HomePage() {
       console.log('[Home polls] setPolls payload:', result.data || [])
       console.log('[Home polls] setPolls payload length:', (result.data || []).length)
 
+      if (authData.user) setUserId(authData.user.id)
       const loadedPolls = (result.data || []) as HomePoll[]
       let nextResults: PollResults = {}
       let nextVotedPolls = new Set<string>()
@@ -222,6 +532,7 @@ export default function HomePage() {
   console.log('[Home polls] HomePage render polls.length:', polls.length)
 
   const featuredPoll = pollsReady && !isHydratingVotes && polls.length > 0 ? polls[0] : null
+  const insights = buildTodayInsights({ polls, votedPolls, selectedPollOptions, pollResults, friendFeed, userId, pollsReady, isHydratingVotes })
 
   return (
     <div className="pb-10 lg:pb-8">
@@ -229,6 +540,7 @@ export default function HomePage() {
 
         <main className="min-w-0 space-y-6">
           <HeroSection />
+          <TodayInsightsSection insights={insights} loading={!pollsReady || isHydratingVotes} />
           {featuredPoll && (
             <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} onVote={handlePollVote} />
           )}
