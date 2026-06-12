@@ -384,7 +384,9 @@ export default function HomePage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [lastVotedPollId, setLastVotedPollId] = useState<string | null>(null)
   const [previewReactionPollId, setPreviewReactionPollId] = useState<string | null>(null)
+  const [selectedFeaturedPollId, setSelectedFeaturedPollId] = useState<string | null>(null)
   const latestPollHydrationRequest = useRef(0)
+  const featuredPollRef = useRef<HTMLElement | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -543,23 +545,33 @@ export default function HomePage() {
   console.log('[Home] component rendered: src/app/page.tsx -> Enquetes do Dia')
   console.log('[Home polls] HomePage render polls.length:', polls.length)
 
-  const featuredPoll = pollsReady && !isHydratingVotes && polls.length > 0 ? polls[0] : null
+  const featuredPoll = pollsReady && !isHydratingVotes && polls.length > 0
+    ? polls.find(poll => poll.id === selectedFeaturedPollId) || polls[0]
+    : null
   const insights = buildTodayInsights({ polls, votedPolls, selectedPollOptions, pollResults, friendFeed, userId, pollsReady, isHydratingVotes })
   const featuredReactionPollId = featuredPoll && previewReactionPollId === featuredPoll.id ? previewReactionPollId : lastVotedPollId
 
+  function handleSelectFeaturedPoll(pollId: string) {
+    setSelectedFeaturedPollId(pollId)
+    requestAnimationFrame(() => {
+      featuredPollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
   return (
-    <div className="space-y-7 pb-10 lg:pb-8">
-      <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={handlePollVote} />
+    <div className="relative space-y-8 pb-10 lg:space-y-10 lg:pb-8">
+      <SocialMomentSection friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} votedPolls={votedPolls} pollResults={pollResults} />
+      <DailyPollsCard polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} resultsLoading={resultsLoading} isHydratingVotes={isHydratingVotes} pollsReady={pollsReady} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} selectedPollId={featuredPoll?.id || selectedFeaturedPollId} onSelectPoll={handleSelectFeaturedPoll} onVote={handlePollVote} />
 
       {featuredPoll && (
-        <section className="space-y-3">
+        <section ref={featuredPollRef} className="scroll-mt-24 space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <SectionTitle eyebrow="Featured poll" title="Enquete em destaque" />
+            <SectionTitle eyebrow="Pergunta do momento" title="Agora é a sua vez" />
             {process.env.NODE_ENV === 'development' && (
               <button
                 type="button"
                 onClick={() => setPreviewReactionPollId(featuredPoll.id)}
-                className="inline-flex h-10 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.08] px-4 text-[12px] font-[800] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition hover:bg-white/[0.12] active:scale-[0.98]"
+                className="inline-flex h-11 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.08] px-4 text-[12px] font-[800] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition hover:bg-white/[0.12] active:scale-[0.98]"
               >
                 Pré-visualizar reação
               </button>
@@ -569,24 +581,112 @@ export default function HomePage() {
         </section>
       )}
 
-      <CircleSection friendFeed={friendFeed} />
-      <FriendsCtaCard feed={friendFeed} />
       <CommunitySection insights={insights} loading={!pollsReady || isHydratingVotes} polls={polls} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} />
-      <PredictionsPlaceholder />
     </div>
+  )
+}
+
+function SocialMomentSection({ friendFeed, selectedPollOptions, votedPolls, pollResults }: {
+  friendFeed: FeedActivity[]
+  selectedPollOptions: SelectedPollOptions
+  votedPolls: Set<string>
+  pollResults: PollResults
+}) {
+  const latest = friendFeed.find(item => item.action_type === 'poll_vote')
+  const friendPollId = latest?.target_id || null
+  const friendOption = latest ? Number((latest.meta as Record<string, unknown> | null)?.option_index) : null
+  const myOption = friendPollId ? selectedPollOptions[friendPollId] : undefined
+  const hasSharedVote = friendPollId ? votedPolls.has(friendPollId) && myOption !== undefined : false
+  const friendName = latest?.profile?.full_name || latest?.profile?.username || 'Seu círculo'
+  const optionLabel = latest?.meta?.option_label as string | undefined
+  const currentResults = friendPollId ? pollResults[friendPollId] || {} : {}
+  const totalVotes = Object.values(currentResults).reduce((sum, count) => sum + count, 0)
+  const userShare = hasSharedVote && totalVotes > 0 ? ((currentResults[myOption!] || 0) / totalVotes) : 0
+
+  let title = 'Descubra como seus amigos pensam futebol.'
+  let body = 'Cada voto revela um pouco do jeito que seu círculo vê o jogo.'
+  let detail = 'Vote em uma pergunta e veja quem ficou do seu lado.'
+  let tone: 'green' | 'purple' | 'red' = 'purple'
+
+  if (latest && hasSharedVote && friendOption !== null && friendOption !== myOption) {
+    title = `${friendName} escolheu o lado que você rejeitou.`
+    body = 'Esse é o tipo de discordância que transforma uma enquete em conversa de futebol.'
+    detail = latest.target_name || 'Veja onde seu círculo se separou.'
+    tone = 'red'
+  } else if (latest && hasSharedVote && friendOption === myOption) {
+    title = `${friendName} viu o jogo como você.`
+    body = 'Seu voto encontrou companhia. Alguém do seu círculo chegou na mesma leitura.'
+    detail = optionLabel || latest.target_name || 'Veja quem pensa parecido.'
+    tone = 'green'
+  } else if (votedPolls.size > 0 && userShare > 0 && userShare < 0.25) {
+    title = 'Você está sozinho nessa opinião.'
+    body = 'Pouca gente seguiu o seu caminho. Isso diz algo sobre seu jeito de ver futebol.'
+    detail = 'Veja se algum amigo teve coragem de escolher igual.'
+    tone = 'purple'
+  } else if (latest) {
+    title = `${friendName} acabou de votar.`
+    body = 'Alguém do seu círculo deixou uma pista sobre como enxerga futebol.'
+    detail = latest.target_name || 'Veja se você concordaria com essa escolha.'
+    tone = 'green'
+  }
+
+  const accent = tone === 'red' ? '#B42318' : tone === 'green' ? '#10B85A' : '#6D4AFF'
+  const glow = tone === 'red' ? 'rgba(180,35,24,0.16)' : tone === 'green' ? 'rgba(16,184,90,0.18)' : 'rgba(109,74,255,0.16)'
+  const avatars = friendFeed.filter(item => item.action_type === 'poll_vote').slice(0, 4)
+
+  return (
+    <section
+      className="relative max-w-full overflow-hidden rounded-[32px] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.34)] ring-1 ring-white/10 sm:p-7 lg:p-8"
+      style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,250,252,0.94))' }}
+    >
+      <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full blur-3xl" style={{ background: glow }} />
+      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0 max-w-[300px] min-[420px]:max-w-[calc(100vw-72px)] sm:max-w-[720px]">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex -space-x-2.5">
+              {avatars.length > 0 ? avatars.map(item => <Avatar key={item.id} item={item} size="md" />) : (
+                <span className="grid h-12 w-12 place-items-center rounded-[18px] bg-[#ECFDF3] ring-1 ring-black/[0.04]">
+                  <Users className="h-5 w-5 text-[#10B85A]" strokeWidth={2.4} />
+                </span>
+              )}
+            </div>
+            <div>
+              <p className="text-[12px] font-[900] uppercase tracking-[0.08em]" style={{ color: accent }}>Social moment</p>
+              <p className="mt-0.5 text-[13px] font-[700] text-[#64748B]">O que seus amigos revelaram agora</p>
+            </div>
+          </div>
+          <h1 className="max-w-full break-words text-[25px] font-[900] leading-[1.04] tracking-[-0.035em] text-[#07111F] [overflow-wrap:anywhere] min-[420px]:text-[34px] sm:text-[46px] lg:text-[56px]">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-[620px] text-[16px] font-[700] leading-[1.5] text-[#334155] sm:text-[18px]">
+            {body}
+          </p>
+          <p className="mt-3 max-w-[560px] text-[14px] font-[650] leading-[1.5] text-[#64748B]">
+            {detail}
+          </p>
+        </div>
+        <Link
+          href="/amigos"
+          className="inline-flex min-h-[48px] w-full max-w-[300px] items-center justify-center rounded-full px-5 text-[14px] font-[900] text-white shadow-[0_18px_34px_rgba(16,184,90,0.28)] transition hover:-translate-y-[1px] active:scale-[0.98] sm:w-auto sm:max-w-none"
+          style={{ background: accent }}
+        >
+          Ver meu círculo
+        </Link>
+      </div>
+    </section>
   )
 }
 
 function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[18px] bg-white shadow-[0_8px_18px_rgba(7,17,31,0.05)] ring-1 ring-black/[0.04]">
+      <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-[18px] bg-white/[0.08] shadow-[0_14px_34px_rgba(0,0,0,0.18)] ring-1 ring-white/10">
         <Flag className="h-4 w-4 text-[#10B85A]" strokeWidth={2.4} />
       </span>
       <div>
-        <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">{eyebrow}</p>
-      <h2 className="mt-1 text-[24px] font-[900] tracking-[-0.04em] text-white">{title}</h2>
-      {description && <p className="mt-1 text-[14px] leading-[1.55] text-[#64748B]">{description}</p>}
+        <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#10B85A]">{eyebrow}</p>
+        <h2 className="mt-1 text-[26px] font-[900] leading-[1.05] tracking-[-0.045em] text-white">{title}</h2>
+        {description && <p className="mt-2 text-[15px] leading-[1.55] text-[#94A3B8]">{description}</p>}
       </div>
     </div>
   )
@@ -594,7 +694,7 @@ function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title:
 
 function Avatar({ item, size = 'md' }: { item: FeedActivity; size?: 'sm' | 'md' }) {
   const name = item.profile?.full_name || item.profile?.username || 'Usuário'
-  const sizeClass = size === 'sm' ? 'h-9 w-9 rounded-[14px] text-[12px]' : 'h-11 w-11 rounded-[16px] text-[14px]'
+  const sizeClass = size === 'sm' ? 'h-10 w-10 rounded-[15px] text-[12px]' : 'h-12 w-12 rounded-[18px] text-[15px]'
   return item.profile?.avatar_url ? (
     <img src={item.profile.avatar_url} alt={name} className={`${sizeClass} shrink-0 object-cover ring-1 ring-black/[0.06]`} />
   ) : (
@@ -608,7 +708,7 @@ function CircleSection({ friendFeed }: { friendFeed: FeedActivity[] }) {
   return (
     <section className="space-y-3">
       <SectionTitle eyebrow="Seu círculo" title="O que está acontecendo perto de você" />
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <CompatibilityHighlightCard />
         <SurprisingOpinionCard />
         <LastVoteCard feed={friendFeed} />
@@ -623,18 +723,18 @@ function LastVoteCard({ feed }: { feed: FeedActivity[] }) {
   const optionLabel = item?.meta?.option_label as string | undefined
 
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.20)] ring-1 ring-white/10">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#64748B]">Último voto</p>
+        <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#64748B]">Último voto</p>
         <MessageCircle className="h-4 w-4 text-[#6D4AFF]" strokeWidth={2.4} />
       </div>
       {item ? (
         <div className="flex items-start gap-3">
           <Avatar item={item} />
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-[800] tracking-[-0.02em] text-[#07111F]">{name}</p>
-            <p className="mt-1 line-clamp-2 text-[13px] leading-[1.45] text-[#64748B]">{item.target_name}</p>
-            {optionLabel && <p className="mt-2 rounded-[14px] bg-[#F3F6F8] px-3 py-2 text-[12px] font-[800] text-[#07111F]">{optionLabel}</p>}
+            <p className="truncate text-[16px] font-[900] tracking-[-0.025em] text-[#07111F]">{name}</p>
+            <p className="mt-1 line-clamp-2 text-[14px] font-[600] leading-[1.45] text-[#64748B]">{item.target_name}</p>
+            {optionLabel && <p className="mt-3 rounded-[16px] bg-[#F3F6F8] px-3 py-2.5 text-[13px] font-[850] text-[#07111F]">{optionLabel}</p>}
           </div>
         </div>
       ) : (
@@ -701,16 +801,16 @@ function CommunitySection({ insights, loading, polls, votedPolls, selectedPollOp
 
   return (
     <section className="space-y-3">
-      <SectionTitle eyebrow="Comunidade" title="Como a torcida está votando" />
+      <SectionTitle eyebrow="Comunidade" title="Depois dos amigos, vem a torcida" />
       {loading ? (
-        <div className="grid gap-3 md:grid-cols-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-[150px] animate-pulse rounded-[24px] bg-white shadow-[0_10px_28px_rgba(7,17,31,0.04)]" />)}
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-[150px] animate-pulse rounded-[28px] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]" />)}
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-3">
-          <CommunityMetricCard icon={<Flame className="h-4 w-4" />} label="Opinião popular" value={popular ? `${popular.percentage}%` : 'Sem dados'} title={popular?.label || 'Ainda sem votos suficientes'} body={popular?.question} />
-          <CommunityMetricCard icon={<Target className="h-4 w-4" />} label="Opinião impopular" value={unpopular ? `${unpopular.percentage}%` : 'Sem dados'} title={minorityInsight ? buildInsightMeta(minorityInsight).title : unpopular?.label || 'Ainda sem minoria clara'} body={minorityInsight ? buildInsightMeta(minorityInsight).context : unpopular?.question} />
-          <CommunityMetricCard icon={<Eye className="h-4 w-4" />} label="Porcentagem da comunidade" value={divided ? `${divided.percentage}%` : 'Sem dados'} title={dividedInsight ? buildInsightMeta(dividedInsight).title : 'Comunidade em formação'} body={dividedInsight ? buildInsightMeta(dividedInsight).context : divided?.question || 'Vote em mais enquetes para revelar divisões reais.'} />
+        <div className="grid gap-4 md:grid-cols-3">
+          <CommunityMetricCard icon={<Flame className="h-4 w-4" />} label="A maioria está indo por aqui" value={popular ? popular.label : 'Ainda sem maioria'} title="A torcida já começou a tomar lado." body={popular?.question} />
+          <CommunityMetricCard icon={<Target className="h-4 w-4" />} label="Pouca gente teve coragem" value={unpopular ? unpopular.label : 'Ainda sem minoria'} title={minorityInsight ? buildInsightMeta(minorityInsight).title : 'Você pode estar pensando diferente.'} body={minorityInsight ? buildInsightMeta(minorityInsight).context : unpopular?.question} />
+          <CommunityMetricCard icon={<Eye className="h-4 w-4" />} label="A pergunta que divide" value={divided ? 'Grupo dividido' : 'Em formação'} title={dividedInsight ? buildInsightMeta(dividedInsight).title : 'Algumas respostas ainda vão revelar lados.'} body={dividedInsight ? buildInsightMeta(dividedInsight).context : divided?.question || 'Vote em mais enquetes para revelar divisões reais.'} />
         </div>
       )}
     </section>
@@ -719,23 +819,23 @@ function CommunitySection({ insights, loading, polls, votedPolls, selectedPollOp
 
 function CommunityMetricCard({ icon, label, value, title, body }: { icon: ReactNode; label: string; value: string; title: string; body?: string }) {
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.20)] ring-1 ring-white/10">
       <div className="mb-4 flex items-center justify-between">
         <span className="inline-flex items-center gap-2 text-[11px] font-[800] uppercase tracking-[0.08em] text-[#64748B]">
           <span className="text-[#10B85A]">{icon}</span>
           {label}
         </span>
-        <span className="text-[20px] font-[900] tracking-[-0.04em] text-[#07111F]">{value}</span>
       </div>
-      <p className="text-[15px] font-[800] leading-[1.25] tracking-[-0.02em] text-[#07111F]">{title}</p>
-      {body && <p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-[#64748B]">{body}</p>}
+      <p className="text-[18px] font-[900] leading-[1.15] tracking-[-0.035em] text-[#07111F]">{value}</p>
+      <p className="mt-2 text-[14px] font-[750] leading-[1.35] tracking-[-0.01em] text-[#334155]">{title}</p>
+      {body && <p className="mt-2 line-clamp-2 text-[14px] font-[600] leading-[1.5] text-[#64748B]">{body}</p>}
     </section>
   )
 }
 
 function PredictionsPlaceholder() {
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.20)] ring-1 ring-white/10">
       <div className="flex items-start gap-3">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[18px] bg-[#ECFDF3]">
           <Shield className="h-4 w-4 text-[#10B85A]" strokeWidth={2.4} />
@@ -762,20 +862,20 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
   const totalVotes = Object.values(results).reduce((sum, c) => sum + c, 0)
   const voted = votedPolls.has(poll.id)
   return (
-    <section className="group overflow-hidden rounded-[24px] bg-white p-6 transition-all duration-300 hover:-translate-y-[1px] sm:p-8 lg:min-h-[440px]" style={{ border: '1px solid rgba(7,17,31,0.06)', boxShadow: '0 18px 45px rgba(7,17,31,0.08)' }}>
-      <div className="mb-6 flex items-center justify-between">
-        <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-[#ECFDF3] px-3 text-[11px] font-bold uppercase tracking-wider text-[#10B85A]">
+    <section className="group overflow-hidden rounded-[28px] bg-white p-5 transition-all duration-300 hover:-translate-y-[1px] sm:p-7 lg:p-8" style={{ border: '1px solid rgba(15,23,42,0.08)', boxShadow: '0 24px 80px rgba(0,0,0,0.22)' }}>
+      <div className="mb-5 flex items-center justify-between">
+        <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#ECFDF3] px-3.5 text-[12px] font-[850] uppercase tracking-[0.06em] text-[#10B85A]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#10B85A]" />
           Enquete em destaque
         </span>
         {voted && (
-          <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#ECFDF3] px-3 text-[11px] font-semibold text-[#10B85A] ring-1 ring-[#BBF7D0]">
+          <span className="inline-flex h-8 items-center gap-1 rounded-full bg-[#ECFDF3] px-3.5 text-[12px] font-[800] text-[#10B85A] ring-1 ring-[#BBF7D0]">
             <Check className="h-3 w-3" strokeWidth={2.4} />
             Votado
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-7">
         <div className="hidden shrink-0 lg:flex lg:flex-col lg:justify-center">
           {(() => {
             const topPct = totalVotes > 0
@@ -783,7 +883,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
               : 0
             return (
           <div
-                className="relative flex h-[220px] w-[240px] flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px]"
+                className="relative flex h-[236px] w-[244px] flex-col items-center justify-center gap-3 overflow-hidden rounded-[24px]"
                 style={{
                   background: 'linear-gradient(135deg, #063B2A 0%, #0B5A3D 100%)',
                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 16px rgba(6,59,42,0.16)',
@@ -813,9 +913,9 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
             )
           })()}
         </div>
-        <div className="flex flex-1 min-w-0 flex-col justify-center">
-          <p className="mb-6 text-[22px] font-[700] leading-[1.15] tracking-[-0.03em] text-[#0F172A] sm:text-[26px] lg:text-[28px]">{poll.question}</p>
-          <div className="space-y-3">
+        <div className="flex min-w-0 flex-1 flex-col justify-center">
+          <p className="mb-5 text-[25px] font-[850] leading-[1.06] tracking-[-0.05em] text-[#07111F] sm:text-[28px] lg:text-[34px]">{poll.question}</p>
+          <div className="space-y-3.5">
             {voted ? (
               poll.options.map((option, optionIndex) => {
                 const label = typeof option === 'string' ? option : option.label
@@ -823,17 +923,17 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                 const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                 const selected = selectedPollOptions[poll.id] === optionIndex
                 return (
-                  <div key={`feat-${poll.id}-${optionIndex}`} className={`w-full max-w-full min-w-0 overflow-hidden rounded-[14px] px-4 py-3 ring-1 transition-all ${
+                      <div key={`feat-${poll.id}-${optionIndex}`} className={`w-full max-w-full min-w-0 overflow-hidden rounded-[18px] px-4 py-4 ring-1 transition-all ${
                     selected
-                      ? 'bg-[#F0FDF4] ring-[#22C55E]/30 shadow-[0_2px_8px_rgba(34,197,94,0.12)]'
-                      : 'bg-[#F8FAFC] ring-black/[0.05]'
+                      ? 'bg-[#ECFDF3] ring-[#10B85A]/35 shadow-[0_12px_28px_rgba(16,184,90,0.12)]'
+                      : 'bg-[#F8FAFC] ring-black/[0.06]'
                   }`}>
                     <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_48px] items-center gap-2">
-                      <span className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-[500] ${selected ? 'text-[#16A34A]' : 'text-[#374151]'}`}>{label}</span>
-                      <span className={`w-12 shrink-0 text-right tabular-nums text-[13px] font-[400] ${selected ? 'text-[#16A34A]' : 'text-[#64748B]'}`}>{percentage}%</span>
+                      <span className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[16px] font-[800] ${selected ? 'text-[#063B2A]' : 'text-[#07111F]'}`}>{label}</span>
+                      <span className={`w-12 shrink-0 text-right tabular-nums text-[13px] font-[850] ${selected ? 'text-[#10B85A]' : 'text-[#64748B]'}`}>{percentage}%</span>
                     </div>
                     <div className="mt-2 w-full max-w-full overflow-hidden">
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
                         <div
                           className={`h-full max-w-full rounded-full transition-all duration-700 ${selected ? 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]' : 'bg-gradient-to-r from-[#93C5FD] to-[#2563EB]/60'}`}
                           style={{ width: `${percentage}%` }}
@@ -850,7 +950,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
                   <button
                     key={`feat-${poll.id}-${optionIndex}`}
                     onClick={() => onVote(poll, optionIndex)}
-                    className="flex h-12 w-full min-w-0 items-center overflow-hidden rounded-[14px] bg-[#F8FAFC] px-4 text-left text-[15px] font-[500] text-[#374151] ring-1 ring-black/[0.05] transition-all duration-200 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#2563EB]/20 hover:shadow-[0_2px_8px_rgba(37,99,235,0.10)] active:scale-[0.99]">
+                    className="flex min-h-[58px] w-full min-w-0 items-center overflow-hidden rounded-[18px] bg-[#F8FAFC] px-4 text-left text-[16px] font-[800] text-[#07111F] ring-1 ring-black/[0.06] transition-all duration-200 hover:bg-[#ECFDF3] hover:text-[#063B2A] hover:ring-[#10B85A]/30 hover:shadow-[0_12px_28px_rgba(16,184,90,0.12)] active:scale-[0.99]">
                     {label}
                   </button>
                 )
@@ -858,7 +958,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
             )}
           </div>
           {voted && totalVotes > 0 && (
-            <p className="mt-3 text-[13px] font-[400] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
+            <p className="mt-4 text-[13px] font-[700] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
           )}
           <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} pollResults={pollResults} lastVotedPollId={lastVotedPollId} />
         </div>
@@ -950,40 +1050,41 @@ function PostVoteSocialCard({
   return (
     <Link href={href} className="block no-underline">
       <div
-        className="mt-5 overflow-hidden rounded-[24px] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_14px_32px_rgba(7,17,31,0.10)] active:scale-[0.99]"
+        className="mt-6 overflow-hidden rounded-[26px] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_18px_44px_rgba(7,17,31,0.14)] active:scale-[0.99]"
         style={{
-          background: accentBg,
+          background: `linear-gradient(135deg, ${accentBg} 0%, #FFFFFF 100%)`,
           border: `1px solid ${borderColor}`,
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.75)',
         }}
       >
-        <div className="p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-[14px] bg-white/75 ring-1 ring-black/[0.04]">
-                <Users className="h-4 w-4" style={{ color: accentColor }} strokeWidth={2.4} />
+              <span className="grid h-10 w-10 place-items-center rounded-[16px] bg-white/80 shadow-[0_8px_20px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+                <Users className="h-5 w-5" style={{ color: accentColor }} strokeWidth={2.4} />
               </span>
-              <p className="text-[11px] font-[900] uppercase tracking-[0.08em]" style={{ color: accentColor }}>
+              <p className="text-[12px] font-[900] uppercase tracking-[0.07em]" style={{ color: accentColor }}>
                 Reações do seu círculo
               </p>
             </div>
             {visibleFriends.length > 0 && (
-              <div className="flex -space-x-2">
+              <div className="flex -space-x-2.5">
                 {visibleFriends.map(item => <Avatar key={item.id} item={item} size="sm" />)}
               </div>
             )}
           </div>
 
-          <p className="text-[20px] font-[900] leading-[1.12] tracking-[-0.04em] text-[#07111F]">
+          <p className="text-[22px] font-[900] leading-[1.08] tracking-[-0.045em] text-[#07111F] sm:text-[24px]">
             {title}
           </p>
-          <p className="mt-2 text-[14px] font-[600] leading-[1.5] text-[#334155]">
+          <p className="mt-3 text-[15px] font-[700] leading-[1.45] text-[#334155]">
             {body}
           </p>
-          <p className="mt-2 text-[13px] font-[500] leading-[1.5] text-[#64748B]">
+          <p className="mt-2 text-[14px] font-[600] leading-[1.5] text-[#64748B]">
             {supporting}
           </p>
 
-          <div className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-[900] tracking-[-0.01em]" style={{ color: accentColor }}>
+          <div className="mt-5 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-white/70 px-4 text-[13px] font-[900] tracking-[-0.01em] shadow-[0_8px_20px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]" style={{ color: accentColor }}>
             Ver onde seus amigos ficaram
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.3} aria-hidden="true" />
           </div>
@@ -1072,7 +1173,7 @@ function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, res
   )
 }
 
-function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, friendFeed, lastVotedPollId, onVote }: {
+function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, resultsLoading, isHydratingVotes, pollsReady, friendFeed, lastVotedPollId, selectedPollId, onSelectPoll, onVote }: {
   polls: HomePoll[]
   votedPolls: Set<string>
   selectedPollOptions: SelectedPollOptions
@@ -1082,6 +1183,8 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   pollsReady: boolean
   friendFeed: FeedActivity[]
   lastVotedPollId: string | null
+  selectedPollId: string | null | undefined
+  onSelectPoll: (pollId: string) => void
   onVote: (poll: HomePoll, optionIndex: number) => void
 }) {
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -1099,15 +1202,16 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
   if (polls.length === 0) console.log('[Home polls] rendering empty branch: Nenhuma enquete ativa no momento.')
 
   return (
-    <section className="overflow-hidden rounded-[24px] bg-white p-4 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="overflow-hidden rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] ring-1 ring-white/10">
+      <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">Enquetes do momento</p>
-          <h2 className="mt-1 text-[22px] font-[800] tracking-[-0.03em] text-[#07111F]">Escolha uma discussão</h2>
+          <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#10B85A]">Enquetes do momento</p>
+          <h2 className="mt-1 text-[24px] font-[900] leading-[1.05] tracking-[-0.045em] text-[#07111F]">Escolha uma discussão</h2>
+          <p className="mt-2 text-[14px] font-[650] text-[#64748B]">Toque em uma enquete para responder</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {pollsReady && !isHydratingVotes && polls.length > 0 && (
-            <span className="rounded-full bg-[#ECFDF3] px-3 py-1 text-[12px] font-[800] text-[#10B85A]">{polls.length} ativas</span>
+            <span className="rounded-full bg-[#ECFDF3] px-3 py-1.5 text-[12px] font-[850] text-[#10B85A]">{polls.length} ativas</span>
           )}
           {pollsReady && !isHydratingVotes && polls.length > 1 && (
             <CircleDot className="h-4 w-4 text-[#64748B]" strokeWidth={2.2} aria-hidden="true" />
@@ -1118,7 +1222,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
       {!pollsReady || isHydratingVotes ? (
         <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-[130px] w-[116px] shrink-0 animate-pulse snap-start rounded-[18px] bg-[#F3F6F8]" />
+            <div key={i} className="h-[136px] w-[120px] shrink-0 animate-pulse snap-start rounded-[22px] bg-[#F3F6F8]" />
           ))}
         </div>
       ) : (
@@ -1129,33 +1233,40 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
             className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2"
           >
             {polls.map((poll, index) => {
-              const active = index === activeIndex
+              const active = poll.id === selectedPollId || (!selectedPollId && index === activeIndex)
               const voted = votedPolls.has(poll.id)
-              const selected = selectedPollOptions[poll.id]
-              const results = pollResults[poll.id] || {}
-              const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0)
               return (
-              <div
+              <button
+                type="button"
                 key={poll.id}
-                className="flex h-[130px] w-[116px] shrink-0 snap-start flex-col justify-between rounded-[18px] p-3 transition-all duration-200"
+                onClick={() => onSelectPoll(poll.id)}
+                className="flex h-[136px] w-[120px] shrink-0 snap-start flex-col justify-between rounded-[22px] p-3.5 text-left transition-all duration-200 active:scale-[0.98]"
                 style={{
-                  background: active ? '#07111F' : '#FFFFFF',
-                  border: active ? '1px solid #07111F' : '1px solid #E2E8F0',
-                  boxShadow: active ? '0 14px 28px rgba(7,17,31,0.16)' : '0 6px 18px rgba(7,17,31,0.05)',
+                  background: active ? 'linear-gradient(145deg, #07111F 0%, #0B1A2E 100%)' : '#FFFFFF',
+                  border: active ? '1px solid rgba(16,184,90,0.36)' : '1px solid rgba(15,23,42,0.08)',
+                  boxShadow: active ? '0 18px 42px rgba(16,184,90,0.22), 0 18px 46px rgba(0,0,0,0.22)' : '0 10px 26px rgba(15,23,42,0.08)',
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="grid h-8 w-8 place-items-center rounded-[12px]" style={{ background: active ? 'rgba(16,184,90,0.18)' : '#ECFDF3' }}>
+                  <span className="grid h-9 w-9 place-items-center rounded-[15px]" style={{ background: active ? 'rgba(16,184,90,0.18)' : '#ECFDF3' }}>
                     <Activity className="h-4 w-4" style={{ color: active ? '#7EE2A8' : '#10B85A' }} strokeWidth={2.4} />
                   </span>
                   {voted && <span className="h-2 w-2 rounded-full bg-[#10B85A]" />}
                 </div>
-                <p className={`line-clamp-3 text-[12px] font-[800] leading-[1.2] tracking-[-0.02em] ${active ? 'text-white' : 'text-[#07111F]'}`}>{poll.question}</p>
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-[700] ${active ? 'text-white/55' : 'text-[#64748B]'}`}>{totalVotes.toLocaleString('pt-BR')} votos</span>
-                  {selected !== undefined && <span className={`text-[10px] font-[800] ${active ? 'text-[#7EE2A8]' : 'text-[#10B85A]'}`}>votou</span>}
+                <p className={`line-clamp-3 text-[12.5px] font-[850] leading-[1.18] tracking-[-0.025em] ${active ? 'text-white' : 'text-[#07111F]'}`}>{poll.question}</p>
+                <div>
+                  <span
+                    className="inline-flex min-h-[28px] items-center rounded-full px-3 py-1 text-[11px] font-[850]"
+                    style={{
+                      background: voted ? (active ? 'rgba(255,255,255,0.14)' : '#EEF2F6') : '#10B85A',
+                      color: voted ? (active ? 'rgba(255,255,255,0.82)' : '#07111F') : '#FFFFFF',
+                      boxShadow: voted ? 'none' : '0 8px 20px rgba(16,184,90,0.24)',
+                    }}
+                  >
+                    {voted ? 'Ver resultado' : 'Responder agora'}
+                  </span>
                 </div>
-              </div>
+              </button>
               )
             })}
           </div>
@@ -1208,13 +1319,13 @@ function timeAgo(date: string) {
 
 function FriendsCtaCard({ feed }: { feed: FeedActivity[] }) {
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] ring-1 ring-white/10 sm:p-6">
+      <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">O que a galera está votando</p>
-          <h2 className="mt-1 text-[22px] font-[800] tracking-[-0.03em] text-[#07111F]">Atividade recente</h2>
+          <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#10B85A]">O que a galera está votando</p>
+          <h2 className="mt-1 text-[24px] font-[900] leading-[1.05] tracking-[-0.045em] text-[#07111F]">Atividade recente</h2>
         </div>
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[18px] bg-[#F3F6F8]">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[18px] bg-[#F3F6F8]">
           <Users className="h-5 w-5 text-[#6D4AFF]" />
         </span>
       </div>
@@ -1227,17 +1338,17 @@ function FriendsCtaCard({ feed }: { feed: FeedActivity[] }) {
             const optionLabel = item.meta?.option_label as string | undefined
             const pollQuestion = item.target_name
             return (
-              <li key={item.id} className="flex items-start gap-3 rounded-[18px] bg-[#F8FAFA] p-3">
+              <li key={item.id} className="flex items-start gap-3 rounded-[20px] bg-[#F8FAFA] p-3.5 ring-1 ring-black/[0.03]">
                 <Avatar item={item} size="sm" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="truncate text-[14px] font-[800] text-[#07111F]">{name}</p>
+                    <p className="truncate text-[15px] font-[900] tracking-[-0.02em] text-[#07111F]">{name}</p>
                     <span className="shrink-0 text-[11px] font-[700] text-[#94A3B8]">{timeAgo(item.created_at)}</span>
                   </div>
                   {pollQuestion && (
-                    <p className="mt-0.5 line-clamp-1 text-[13px] font-[600] text-[#64748B]">{pollQuestion}</p>
+                    <p className="mt-1 line-clamp-1 text-[13px] font-[650] text-[#64748B]">{pollQuestion}</p>
                   )}
-                  <p className="mt-1 text-[13px] font-[500] leading-snug text-[#64748B]">
+                  <p className="mt-1.5 text-[13px] font-[650] leading-snug text-[#64748B]">
                     {optionLabel ? (
                       <span className="font-[800] text-[#07111F]">{optionLabel}</span>
                     ) : (
@@ -1252,7 +1363,7 @@ function FriendsCtaCard({ feed }: { feed: FeedActivity[] }) {
       )}
       <Link
         href="/amigos"
-        className="mt-4 flex h-[44px] items-center justify-center rounded-[18px] bg-[#10B85A] text-[13px] font-[800] text-white shadow-[0_10px_24px_rgba(16,184,90,0.20)] transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
+        className="mt-5 flex h-[48px] items-center justify-center rounded-[20px] bg-[#10B85A] text-[14px] font-[850] text-white shadow-[0_12px_30px_rgba(16,184,90,0.24)] transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
       >
         Ver todos os amigos
       </Link>
@@ -1336,9 +1447,9 @@ function SurprisingOpinionCard() {
   }, [])
 
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.20)] ring-1 ring-white/10">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#64748B]">Opinião mais inusitada</p>
+        <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#64748B]">Opinião mais inusitada</p>
         <Target className="h-4 w-4 text-[#6D4AFF]" strokeWidth={2.4} />
       </div>
       {status === 'loading' && (
@@ -1353,11 +1464,11 @@ function SurprisingOpinionCard() {
       {status === 'done' && (
         <>
           <div className="flex items-baseline gap-2">
-            <span className="text-[34px] font-[900] leading-none tracking-[-0.04em] text-[#07111F]">{percentage}%</span>
+            <span className="text-[38px] font-[900] leading-none tracking-[-0.05em] text-[#07111F]">{percentage}%</span>
             <span className="text-[13px] font-[700] text-[#64748B]">dos votos</span>
           </div>
-          <p className="mt-2 text-[14px] font-[800] leading-[1.35] tracking-[-0.01em] text-[#07111F]">{optionLabel}</p>
-          <p className="mt-1 text-[12px] font-[400] leading-[1.55] text-[#94A3B8]">{question}</p>
+          <p className="mt-2 text-[16px] font-[900] leading-[1.25] tracking-[-0.02em] text-[#07111F]">{optionLabel}</p>
+          <p className="mt-2 text-[13px] font-[600] leading-[1.5] text-[#64748B]">{question}</p>
         </>
       )}
     </section>
@@ -1512,9 +1623,9 @@ function CompatibilityHighlightCard() {
   }, [])
 
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
+    <section className="rounded-[28px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.20)] ring-1 ring-white/10">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#64748B]">Match do Dia</p>
+        <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#64748B]">Match do Dia</p>
         <Users className="h-4 w-4 text-[#6D4AFF]" strokeWidth={2.4} />
       </div>
 
@@ -1553,8 +1664,8 @@ function CompatibilityHighlightCard() {
           <Link href={`/premium/compare/${top.friendId}`} className="block no-underline group">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-[34px] font-[900] leading-none tracking-[-0.04em] text-[#07111F]">{top.score}%</p>
-                <p className="mt-1 truncate text-[13px] font-[700] text-[#64748B]">{top.username}</p>
+                <p className="text-[38px] font-[900] leading-none tracking-[-0.05em] text-[#07111F]">{top.score}%</p>
+                <p className="mt-1 truncate text-[14px] font-[850] text-[#64748B]">{top.username}</p>
               </div>
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px]"

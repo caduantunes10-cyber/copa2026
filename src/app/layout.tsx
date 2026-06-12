@@ -33,12 +33,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen text-[#F8FAFC] antialiased" style={{ fontFamily: '"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#07111F' }}>
+      <body className="min-h-screen overflow-x-hidden text-[#F8FAFC] antialiased" style={{ fontFamily: '"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: 'radial-gradient(circle at 50% -10%, rgba(16,184,90,0.18), transparent 34%), radial-gradient(circle at 8% 12%, rgba(109,74,255,0.12), transparent 30%), linear-gradient(180deg, #050B14 0%, #07111F 44%, #050B14 100%)' }}>
         <Header />
-        <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8">
+        <main className="mx-auto w-full max-w-[1120px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pt-8">
           {children}
         </main>
-        <footer className="mx-auto w-full max-w-[1400px] px-4 pb-32 pt-6 sm:px-6 sm:pb-10 lg:px-8">
+        <footer className="mx-auto w-full max-w-[1120px] px-4 pb-32 pt-6 sm:px-6 sm:pb-10 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {[
               { label: 'Termos', href: '/termos' },
