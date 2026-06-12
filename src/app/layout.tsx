@@ -33,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen text-[#07111F] antialiased" style={{ fontFamily: '"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#F3F6F8' }}>
+      <body className="min-h-screen text-[#F8FAFC] antialiased" style={{ fontFamily: '"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#07111F' }}>
         <Header />
         <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8">
           {children}

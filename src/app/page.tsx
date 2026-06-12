@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { Activity, BarChart3, Crown, MessageCircle, Target, TrendingUp, Users } from 'lucide-react'
+import { Activity, ArrowRight, Check, CircleDot, Crown, Eye, Flag, Flame, MessageCircle, Shield, Target, Trophy, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FeedActivity } from '@/types'
 
@@ -249,9 +249,7 @@ function InsightCard({ insight }: { insight: Insight }) {
       {(meta.cta || insight.cta) && (
         <div className="mt-6 flex items-center gap-1.5 text-[13px] font-[700] tracking-[-0.01em]" style={{ color: meta.accentColor }}>
           {meta.cta || insight.cta}
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
         </div>
       )}
     </div>
@@ -385,6 +383,7 @@ export default function HomePage() {
   const [friendFeed, setFriendFeed] = useState<FeedActivity[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [lastVotedPollId, setLastVotedPollId] = useState<string | null>(null)
+  const [previewReactionPollId, setPreviewReactionPollId] = useState<string | null>(null)
   const latestPollHydrationRequest = useRef(0)
   const supabase = createClient()
 
@@ -546,6 +545,7 @@ export default function HomePage() {
 
   const featuredPoll = pollsReady && !isHydratingVotes && polls.length > 0 ? polls[0] : null
   const insights = buildTodayInsights({ polls, votedPolls, selectedPollOptions, pollResults, friendFeed, userId, pollsReady, isHydratingVotes })
+  const featuredReactionPollId = featuredPoll && previewReactionPollId === featuredPoll.id ? previewReactionPollId : lastVotedPollId
 
   return (
     <div className="space-y-7 pb-10 lg:pb-8">
@@ -553,8 +553,19 @@ export default function HomePage() {
 
       {featuredPoll && (
         <section className="space-y-3">
-          <SectionTitle eyebrow="Featured poll" title="Enquete em destaque" />
-          <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} friendFeed={friendFeed} lastVotedPollId={lastVotedPollId} onVote={handlePollVote} />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <SectionTitle eyebrow="Featured poll" title="Enquete em destaque" />
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                type="button"
+                onClick={() => setPreviewReactionPollId(featuredPoll.id)}
+                className="inline-flex h-10 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.08] px-4 text-[12px] font-[800] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition hover:bg-white/[0.12] active:scale-[0.98]"
+              >
+                Pré-visualizar reação
+              </button>
+            )}
+          </div>
+          <FeaturedPollCard poll={featuredPoll} votedPolls={votedPolls} selectedPollOptions={selectedPollOptions} pollResults={pollResults} friendFeed={friendFeed} lastVotedPollId={featuredReactionPollId} onVote={handlePollVote} />
         </section>
       )}
 
@@ -568,10 +579,15 @@ export default function HomePage() {
 
 function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
   return (
-    <div>
-      <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">{eyebrow}</p>
-      <h2 className="mt-1 text-[22px] font-[800] tracking-[-0.03em] text-[#07111F]">{title}</h2>
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[18px] bg-white shadow-[0_8px_18px_rgba(7,17,31,0.05)] ring-1 ring-black/[0.04]">
+        <Flag className="h-4 w-4 text-[#10B85A]" strokeWidth={2.4} />
+      </span>
+      <div>
+        <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">{eyebrow}</p>
+      <h2 className="mt-1 text-[24px] font-[900] tracking-[-0.04em] text-white">{title}</h2>
       {description && <p className="mt-1 text-[14px] leading-[1.55] text-[#64748B]">{description}</p>}
+      </div>
     </div>
   )
 }
@@ -692,9 +708,9 @@ function CommunitySection({ insights, loading, polls, votedPolls, selectedPollOp
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-3">
-          <CommunityMetricCard icon={<TrendingUp className="h-4 w-4" />} label="Opinião popular" value={popular ? `${popular.percentage}%` : 'Sem dados'} title={popular?.label || 'Ainda sem votos suficientes'} body={popular?.question} />
+          <CommunityMetricCard icon={<Flame className="h-4 w-4" />} label="Opinião popular" value={popular ? `${popular.percentage}%` : 'Sem dados'} title={popular?.label || 'Ainda sem votos suficientes'} body={popular?.question} />
           <CommunityMetricCard icon={<Target className="h-4 w-4" />} label="Opinião impopular" value={unpopular ? `${unpopular.percentage}%` : 'Sem dados'} title={minorityInsight ? buildInsightMeta(minorityInsight).title : unpopular?.label || 'Ainda sem minoria clara'} body={minorityInsight ? buildInsightMeta(minorityInsight).context : unpopular?.question} />
-          <CommunityMetricCard icon={<BarChart3 className="h-4 w-4" />} label="Porcentagem da comunidade" value={divided ? `${divided.percentage}%` : 'Sem dados'} title={dividedInsight ? buildInsightMeta(dividedInsight).title : 'Comunidade em formação'} body={dividedInsight ? buildInsightMeta(dividedInsight).context : divided?.question || 'Vote em mais enquetes para revelar divisões reais.'} />
+          <CommunityMetricCard icon={<Eye className="h-4 w-4" />} label="Porcentagem da comunidade" value={divided ? `${divided.percentage}%` : 'Sem dados'} title={dividedInsight ? buildInsightMeta(dividedInsight).title : 'Comunidade em formação'} body={dividedInsight ? buildInsightMeta(dividedInsight).context : divided?.question || 'Vote em mais enquetes para revelar divisões reais.'} />
         </div>
       )}
     </section>
@@ -720,7 +736,15 @@ function CommunityMetricCard({ icon, label, value, title, body }: { icon: ReactN
 function PredictionsPlaceholder() {
   return (
     <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(7,17,31,0.06)] ring-1 ring-black/[0.04]">
-      <SectionTitle eyebrow="Palpites" title="Seus palpites aparecerão aqui." />
+      <div className="flex items-start gap-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[18px] bg-[#ECFDF3]">
+          <Shield className="h-4 w-4 text-[#10B85A]" strokeWidth={2.4} />
+        </span>
+        <div>
+          <p className="text-[11px] font-[800] uppercase tracking-[0.08em] text-[#10B85A]">Palpites</p>
+          <h2 className="mt-1 text-[22px] font-[800] tracking-[-0.03em] text-[#07111F]">Seus palpites aparecerão aqui.</h2>
+        </div>
+      </div>
     </section>
   )
 }
@@ -746,7 +770,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
         </span>
         {voted && (
           <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#ECFDF3] px-3 text-[11px] font-semibold text-[#10B85A] ring-1 ring-[#BBF7D0]">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#10B85A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <Check className="h-3 w-3" strokeWidth={2.4} />
             Votado
           </span>
         )}
@@ -758,28 +782,31 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
               ? Math.max(...poll.options.map((_, i) => Math.round(((results[i] || 0) / totalVotes) * 100)))
               : 0
             return (
-              <div
-                className="flex h-[220px] w-[240px] flex-col items-center justify-center gap-3 rounded-[20px]"
+          <div
+                className="relative flex h-[220px] w-[240px] flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px]"
                 style={{
-                  background: 'linear-gradient(135deg, #ECFDF5 0%, #EFF6FF 100%)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 16px rgba(34,197,94,0.12)',
+                  background: 'linear-gradient(135deg, #063B2A 0%, #0B5A3D 100%)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 16px rgba(6,59,42,0.16)',
                 }}
               >
+                <div className="pointer-events-none absolute inset-x-4 top-1/2 h-px bg-white/20" />
+                <div className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20" />
+                <div className="pointer-events-none absolute inset-5 rounded-[16px] border border-white/15" />
                 <div
-                  className="flex h-[52px] w-[52px] items-center justify-center rounded-full"
-                  style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}
+                  className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.22)' }}
                 >
-                  <TrendingUp className="h-7 w-7 text-[#22C55E]" strokeWidth={2} />
+                  <Trophy className="h-7 w-7 text-white" strokeWidth={2} />
                 </div>
                 <div
-                  className="text-[40px] font-[700] leading-[1.1] tracking-[-0.04em] tabular-nums text-[#16A34A]"
+                  className="relative text-[40px] font-[700] leading-[1.1] tracking-[-0.04em] tabular-nums text-white"
                 >
-                  {totalVotes > 0 ? `${topPct}%` : '—'}
+                  {totalVotes > 0 ? `${topPct}%` : '0%'}
                 </div>
-                <p className="max-w-[160px] text-center text-[14px] font-[500] leading-snug text-[#0F172A]">
+                <p className="relative max-w-[160px] text-center text-[14px] font-[600] leading-snug text-white/90">
                   Concordam com esta opção
                 </p>
-                <p className="text-[13px] font-[400] text-[#64748B]">
+                <p className="relative text-[13px] font-[500] text-white/60">
                   {totalVotes > 0 ? `${totalVotes.toLocaleString('pt-BR')} votos totais` : 'Sem votos ainda'}
                 </p>
               </div>
@@ -833,7 +860,7 @@ function FeaturedPollCard({ poll, votedPolls, selectedPollOptions, pollResults, 
           {voted && totalVotes > 0 && (
             <p className="mt-3 text-[13px] font-[400] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos totais</p>
           )}
-          <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} lastVotedPollId={lastVotedPollId} />
+          <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} pollResults={pollResults} lastVotedPollId={lastVotedPollId} />
         </div>
       </div>
     </section>
@@ -846,11 +873,13 @@ function PostVoteSocialCard({
   pollId,
   friendFeed,
   selectedPollOptions,
+  pollResults,
   lastVotedPollId,
 }: {
   pollId: string
   friendFeed: FeedActivity[]
   selectedPollOptions: SelectedPollOptions
+  pollResults: PollResults
   lastVotedPollId: string | null
 }) {
   // Only show on the poll the user just voted on
@@ -858,82 +887,105 @@ function PostVoteSocialCard({
   const myOption = selectedPollOptions[pollId]
   if (myOption === undefined) return null
 
-  const match = friendFeed.find(
+  const pollFriendVotes = friendFeed.filter(
     f => f.action_type === 'poll_vote' && f.target_id === pollId && f.meta !== null
   )
+  const agreements = pollFriendVotes.filter(f => Number((f.meta as Record<string, unknown>)?.option_index) === myOption)
+  const disagreements = pollFriendVotes.filter(f => Number((f.meta as Record<string, unknown>)?.option_index) !== myOption)
+  const visibleFriends = [...disagreements, ...agreements].slice(0, 4)
+  const featuredFriend = disagreements[0] || agreements[0] || pollFriendVotes[0] || null
+  const featuredName = featuredFriend?.profile?.full_name || featuredFriend?.profile?.username || 'Seu círculo'
+  const friendOptions = new Set(pollFriendVotes.map(f => Number((f.meta as Record<string, unknown>)?.option_index)))
+  const results = pollResults[pollId] || {}
+  const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0)
+  const myVoteShare = totalVotes > 0 ? ((results[myOption] || 0) / totalVotes) : 0
 
-  let title: string
-  let body: string
-  let supporting: string
-  let cta: string
-  let href: string
-  let accentColor: string
-  let accentBg: string
-  let borderColor: string
+  let title = 'Essa resposta revela mais do que parece.'
+  let body = 'Agora vem a parte boa: descobrir quem viu futebol do mesmo jeito que você.'
+  let supporting = 'O voto só começa quando aparece o rosto de alguém conhecido.'
+  let href = '/amigos'
+  let accentColor = '#6D4AFF'
+  let accentBg = '#F7F5FF'
+  let borderColor = 'rgba(109,74,255,0.18)'
 
-  if (match) {
-    const friendOption = (match.meta as Record<string, unknown>)?.option_index
-    const name = match.profile?.full_name || match.profile?.username || 'Um amigo'
-    if (Number(friendOption) === myOption) {
-      title = 'Vocês chegaram à mesma conclusão.'
-      body = `${name} escolheu exatamente a mesma resposta.`
-      supporting = 'Talvez vocês pensem mais parecido do que imaginam.'
-      cta = 'Ver compatibilidade'
-      href = `/premium/compare/${match.user_id}`
-      accentColor = '#15803D'
-      accentBg = 'rgba(240,253,244,0.80)'
-      borderColor = 'rgba(34,197,94,0.20)'
-    } else {
-      title = 'Vocês escolheram lados opostos.'
-      body = `${name} acredita em algo diferente nesta discussão.`
-      supporting = 'Essa pode ser uma das maiores divergências entre vocês.'
-      cta = 'Comparar opiniões'
-      href = `/premium/compare/${match.user_id}`
-      accentColor = '#B91C1C'
-      accentBg = 'rgba(254,242,242,0.85)'
-      borderColor = 'rgba(239,68,68,0.18)'
-    }
-  } else {
-    title = 'Ainda não há comparação disponível.'
-    body = 'Convide amigos e descubra quem realmente pensa como você.'
-    supporting = ''
-    cta = 'Encontrar amigos'
-    href = '/amigos'
-    accentColor = '#374151'
-    accentBg = 'rgba(248,250,252,0.90)'
-    borderColor = 'rgba(226,232,240,0.90)'
+  if (disagreements.length > 0) {
+    title = `${featuredName} escolheu exatamente o lado que você rejeitou.`
+    body = disagreements.length > 1
+      ? 'Mais de um amigo foi para o outro lado. Essa conversa já tem rivalidade.'
+      : `Você e ${featuredName} não viram essa jogada do mesmo jeito.`
+    supporting = agreements.length > 0
+      ? 'E o mais interessante: nem todo mundo do seu círculo ficou do mesmo lado.'
+      : 'Esse é o tipo de voto que dá vontade de perguntar: como assim?'
+    href = `/premium/compare/${disagreements[0].user_id}`
+    accentColor = '#B42318'
+    accentBg = '#FFF1F0'
+    borderColor = 'rgba(180,35,24,0.18)'
+  } else if (myVoteShare > 0 && myVoteShare < 0.25) {
+    title = 'Você está sozinho nesse lado da arquibancada.'
+    body = 'Quase ninguém seguiu esse caminho até agora.'
+    supporting = 'Essa resposta tem cara de identidade: você realmente vê futebol de outro jeito.'
+    accentColor = '#6D4AFF'
+    accentBg = '#F7F5FF'
+    borderColor = 'rgba(109,74,255,0.18)'
+  } else if (pollFriendVotes.length === 0) {
+    title = 'Ninguém do seu círculo apareceu aqui ainda.'
+    body = 'Por enquanto, essa opinião é só sua.'
+    supporting = 'A curiosidade fica no ar: quem dos seus amigos teria coragem de escolher o mesmo?'
+  } else if (agreements.length > 0) {
+    title = `${featuredName} chegou à mesma conclusão que você.`
+    body = agreements.length > 1
+      ? 'Seu voto encontrou companhia. Seu grupo tem um jeito parecido de ler futebol.'
+      : `Você e ${featuredName} parecem enxergar o jogo pela mesma lente.`
+    supporting = 'Esse é aquele momento de: eu sabia que alguém ia entender.'
+    href = `/premium/compare/${agreements[0].user_id}`
+    accentColor = '#10B85A'
+    accentBg = '#ECFDF3'
+    borderColor = 'rgba(16,184,90,0.22)'
+  } else if (friendOptions.size > 1) {
+    title = 'Esse voto rachou seu círculo.'
+    body = 'A mesma pergunta colocou amigos em lados diferentes.'
+    supporting = 'Quando a bola vira opinião, o grupo mostra quem é quem.'
   }
 
   return (
     <Link href={href} className="block no-underline">
       <div
-        className="mt-4 overflow-hidden rounded-[18px] transition-all duration-200 hover:shadow-[0_8px_24px_rgba(15,23,42,0.10)] hover:-translate-y-[1px] active:scale-[0.99]"
+        className="mt-5 overflow-hidden rounded-[24px] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_14px_32px_rgba(7,17,31,0.10)] active:scale-[0.99]"
         style={{
           background: accentBg,
           border: `1px solid ${borderColor}`,
-          borderLeft: `3px solid ${accentColor}`,
         }}
       >
-        <div className="px-5 py-4">
-          <p className="text-[15px] font-[800] leading-[1.25] tracking-[-0.025em] text-[#0F172A]">
+        <div className="p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-[14px] bg-white/75 ring-1 ring-black/[0.04]">
+                <Users className="h-4 w-4" style={{ color: accentColor }} strokeWidth={2.4} />
+              </span>
+              <p className="text-[11px] font-[900] uppercase tracking-[0.08em]" style={{ color: accentColor }}>
+                Reações do seu círculo
+              </p>
+            </div>
+            {visibleFriends.length > 0 && (
+              <div className="flex -space-x-2">
+                {visibleFriends.map(item => <Avatar key={item.id} item={item} size="sm" />)}
+              </div>
+            )}
+          </div>
+
+          <p className="text-[20px] font-[900] leading-[1.12] tracking-[-0.04em] text-[#07111F]">
             {title}
           </p>
-          <p className="mt-1.5 text-[13px] font-[400] leading-[1.55] text-[#334155]">
+          <p className="mt-2 text-[14px] font-[600] leading-[1.5] text-[#334155]">
             {body}
           </p>
-          {supporting && (
-            <p className="mt-1 text-[12px] font-[400] leading-[1.5] text-[#64748B]">
-              {supporting}
-            </p>
-          )}
-          <div
-            className="mt-4 inline-flex items-center gap-1 text-[13px] font-[700] tracking-[-0.01em]"
-            style={{ color: accentColor }}
-          >
-            {cta}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <p className="mt-2 text-[13px] font-[500] leading-[1.5] text-[#64748B]">
+            {supporting}
+          </p>
+
+          <div className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-[900] tracking-[-0.01em]" style={{ color: accentColor }}>
+            Ver onde seus amigos ficaram
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.3} aria-hidden="true" />
           </div>
         </div>
       </div>
@@ -962,7 +1014,7 @@ function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, res
             <p className="text-[15px] font-[600] leading-[1.35] text-[#0F172A]">{poll.question}</p>
             {votedPolls.has(poll.id) && (
               <span className="shrink-0 inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[10px] font-bold text-[#16A34A]" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.20)' }}>
-                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5 3.5-3" stroke="#16A34A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <Check className="h-3 w-3" strokeWidth={2.4} />
                 Votado
               </span>
             )}
@@ -999,7 +1051,7 @@ function PollCardInner({ poll, votedPolls, selectedPollOptions, pollResults, res
                     )
                   })}
                   <p className="text-[13px] text-[#64748B]">{totalVotes.toLocaleString('pt-BR')} votos</p>
-                  <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} lastVotedPollId={lastVotedPollId} />
+                  <PostVoteSocialCard pollId={poll.id} friendFeed={friendFeed} selectedPollOptions={selectedPollOptions} pollResults={pollResults} lastVotedPollId={lastVotedPollId} />
                 </div>
               )
             })()
@@ -1058,7 +1110,7 @@ function DailyPollsCard({ polls, votedPolls, selectedPollOptions, pollResults, r
             <span className="rounded-full bg-[#ECFDF3] px-3 py-1 text-[12px] font-[800] text-[#10B85A]">{polls.length} ativas</span>
           )}
           {pollsReady && !isHydratingVotes && polls.length > 1 && (
-            <span className="text-[18px] font-[300] leading-none text-[#64748B]" aria-hidden="true">›</span>
+            <CircleDot className="h-4 w-4 text-[#64748B]" strokeWidth={2.2} aria-hidden="true" />
           )}
         </div>
       </div>
